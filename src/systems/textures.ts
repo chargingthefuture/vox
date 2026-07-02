@@ -18,6 +18,14 @@ const KEYS = [
   'vox-beacon',
   'vox-beacon-lit',
   'vox-particle',
+  'vox-slanderer',
+  'vox-gatekeeper',
+  'vox-recorder',
+  'vox-accuser',
+  'vox-clerk',
+  'vox-boss2',
+  'vox-bubble',
+  'vox-bubble-truth',
 ] as const;
 
 let generatedFor: 'normal' | 'calm' | null = null;
@@ -138,6 +146,111 @@ export function ensureTextures(scene: Phaser.Scene): void {
   gen('vox-particle', 6, 6, () => {
     g.fillStyle(0xffffff, 1);
     g.fillRect(0, 0, 6, 6);
+  });
+
+  // --- World 2: Spectervox ---
+
+  // Slanderer (#2) — all mouth.
+  gen('vox-slanderer', 32, 36, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(3, 4, 26, 30, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(11, 13, 2);
+    g.fillCircle(21, 13, 2);
+    g.fillStyle(p.playerAccent, 1);
+    g.fillEllipse(16, 24, 14, 9); // the ever-running mouth
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillEllipse(16, 25, 9, 5);
+  });
+
+  // Gatekeeper (#18) — a stamping gate with a smug little window.
+  gen('vox-gatekeeper', 48, 52, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(2, 8, 44, 42, 4);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(6, 2, 36, 10); // the stamp arm resting on top
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillRect(12, 20, 24, 10); // service window
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(14, 23, 20, 4); // firmly closed
+  });
+
+  // Recorder (#30) — a hovering mic that thinks it is subtle.
+  gen('vox-recorder', 32, 28, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(4, 8, 24, 14, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(10, 15, 4); // lens
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillCircle(10, 15, 1.8);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(14, 3, 3, 6); // antenna
+    g.fillRect(20, 24, 8, 2); // little tail fin
+  });
+
+  // Accuser (#31) — mostly pointing finger.
+  gen('vox-accuser', 32, 38, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(2, 5, 22, 30, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(9, 13, 2);
+    g.fillCircle(17, 13, 2);
+    g.fillStyle(p.playerAccent, 0.95);
+    g.fillRect(20, 18, 11, 4); // the finger, always out
+  });
+
+  // Clerk (#38) — a check-in desk with a bell.
+  gen('vox-clerk', 36, 32, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(2, 12, 32, 18, 3);
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillRect(6, 16, 24, 5); // the ledger
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(27, 9, 4); // the bell
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(26, 4, 2, 3);
+  });
+
+  // Spectervox — the boss. A ghost that is mostly megaphone.
+  gen('vox-boss2', 96, 112, () => {
+    g.fillStyle(p.boss, 1);
+    g.fillEllipse(48, 46, 86, 82);
+    g.fillTriangle(8, 76, 26, 76, 17, 104);
+    g.fillTriangle(30, 80, 48, 80, 39, 108);
+    g.fillTriangle(52, 80, 70, 80, 61, 108);
+    g.fillTriangle(72, 76, 90, 76, 81, 104);
+    g.fillStyle(p.playerAccent, 1);
+    g.fillCircle(32, 34, 6);
+    g.fillCircle(58, 34, 6);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(32, 35, 2.8);
+    g.fillCircle(58, 35, 2.8);
+    // The megaphone mouth — enormous, of course
+    g.fillStyle(p.playerAccent, 1);
+    g.fillEllipse(48, 64, 40, 26);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillEllipse(48, 65, 30, 18);
+  });
+
+  // A lie in transit: a speech bubble with a scribble inside.
+  gen('vox-bubble', 30, 26, () => {
+    g.fillStyle(p.playerAccent, 0.95);
+    g.fillRoundedRect(1, 1, 28, 18, 7);
+    g.fillTriangle(6, 17, 14, 17, 7, 24); // tail
+    g.lineStyle(2, p.hurt, 0.9);
+    g.lineBetween(8, 7, 14, 13);
+    g.lineBetween(14, 7, 8, 13); // the X of a falsehood
+    g.lineBetween(17, 10, 23, 10);
+  });
+
+  // The same bubble, deflected into a truth.
+  gen('vox-bubble-truth', 30, 26, () => {
+    g.fillStyle(p.checkpointLit, 0.95);
+    g.fillRoundedRect(1, 1, 28, 18, 7);
+    g.fillTriangle(16, 17, 24, 17, 23, 24); // tail flipped — it is going back
+    g.lineStyle(2.5, p.uiCard, 0.9);
+    g.lineBetween(8, 10, 12, 14);
+    g.lineBetween(12, 14, 21, 6); // a check mark
   });
 
   g.destroy();

@@ -31,7 +31,7 @@ export const WORLDS: World[] = [
     meaning: 'the suppression of dissenting voices',
     theme: 'Slander, reputation, being recorded and baited',
     problemIds: [2, 18, 30, 31, 38],
-    implemented: [],
+    implemented: [2, 18, 30, 31, 38],
   },
   {
     id: 3,
