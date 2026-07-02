@@ -50,14 +50,16 @@ Worlds 2–7 are next, one world at a time.
 
 ## Controls (defaults)
 
-| Action | Keys |
-|---|---|
-| Move | ← → or A D |
-| Jump | Space, W, or ↑ |
-| Attack (combo: press again) | J or X |
+| Action | Keys | Gamepad |
+|---|---|---|
+| Move | ← → or A D | left stick or d-pad |
+| Jump | Space, W, or ↑ | bottom face button (A) |
+| Attack (combo: press again) | J or X | any other face button |
 
-On phones and tablets, on-screen touch buttons appear (move on the left, attack and jump
-on the right). The game plays sideways — portrait shows a rotate prompt.
+Gamepads that use the browser's standard mapping (Xbox-style, 8BitDo, DualShock) work out
+of the box; Start also confirms menus. On phones and tablets, on-screen touch buttons
+appear (move on the left, attack and jump on the right). The game plays sideways —
+portrait shows a rotate prompt.
 
 ## Development
 

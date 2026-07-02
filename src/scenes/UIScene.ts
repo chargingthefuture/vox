@@ -6,6 +6,7 @@ import { BOSS_EVENTS } from '../entities/Boss';
 import { EVENTS } from '../entities/enemies';
 import { getProblem } from '../data/problems';
 import { getWorld } from '../data/worlds';
+import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { virtualPress, virtualRelease } from '../systems/input';
 import { pal } from '../systems/palette';
 import { progress, saveProgress, settings, type BindableAction } from '../systems/settings';
@@ -24,6 +25,8 @@ export class UIScene extends Phaser.Scene {
   private cardQueue: number[] = [];
   private cardShowing = false;
   private clearShown = false;
+  /** Armed while a dismissable overlay (card / world clear) is up; gamepad confirm fires it. */
+  private overlayDismiss: (() => void) | null = null;
 
   constructor() {
     super('ui');
@@ -81,26 +84,32 @@ export class UIScene extends Phaser.Scene {
   }
 
   // On-screen buttons for phones/tablets: move on the left, jump + attack on the right.
-  // They feed the same action-input layer as the keyboard.
+  // They feed the same action-input layer as the keyboard. Styled to stay out of the way:
+  // small, faint, tucked into the bottom corners — the hit zone is bigger than the drawing.
   private buildTouchControls(): void {
     const p = pal();
     // Two thumbs at once (move + jump/attack) need extra touch pointers
     this.input.addPointer(3);
 
-    const button = (x: number, y: number, r: number, label: string, action: BindableAction): void => {
-      const zone = this.add.circle(x, y, r, p.uiCard, 0.35).setDepth(95).setStrokeStyle(2, 0xffffff, 0.25);
+    const button = (x: number, y: number, label: string, action: BindableAction): void => {
+      const r = 34;
+      const zone = this.add.circle(x, y, r, p.uiCard, 0.16).setDepth(95).setStrokeStyle(1.5, 0xffffff, 0.18);
+      // Generous invisible hit area so smaller visuals don't mean missed presses
+      zone.setInteractive(
+        new Phaser.Geom.Circle(r, r, r + 18),
+        Phaser.Geom.Circle.Contains as (shape: Phaser.Geom.Circle, x: number, y: number) => boolean,
+      );
       this.add
-        .text(x, y, label, { fontFamily: 'monospace', fontSize: `${Math.round(r * 0.7)}px`, color: p.uiText })
+        .text(x, y, label, { fontFamily: 'monospace', fontSize: '22px', color: p.uiText })
         .setOrigin(0.5)
-        .setAlpha(0.8)
+        .setAlpha(0.45)
         .setDepth(96);
-      zone.setInteractive({ useHandCursor: false });
       const press = (): void => {
-        zone.setFillStyle(p.uiCard, 0.7);
+        zone.setFillStyle(p.uiCard, 0.45);
         virtualPress(action);
       };
       const release = (): void => {
-        zone.setFillStyle(p.uiCard, 0.35);
+        zone.setFillStyle(p.uiCard, 0.16);
         virtualRelease(action);
       };
       zone.on('pointerdown', press);
@@ -108,10 +117,20 @@ export class UIScene extends Phaser.Scene {
       zone.on('pointerout', release);
     };
 
-    button(84, H - 70, 46, '◀', 'left');
-    button(196, H - 70, 46, '▶', 'right');
-    button(W - 196, H - 70, 46, '✦', 'attack');
-    button(W - 84, H - 70, 46, '⤒', 'jump');
+    button(52, H - 44, '◀', 'left');
+    button(140, H - 44, '▶', 'right');
+    button(W - 140, H - 44, '✦', 'attack');
+    button(W - 52, H - 44, '⤒', 'jump');
+  }
+
+  update(): void {
+    // Gamepad confirm dismisses whatever overlay is up (cards, world clear)
+    sampleGamepad(this.game.loop.frame);
+    if (this.overlayDismiss && gpConfirmPressed()) {
+      const fn = this.overlayDismiss;
+      this.overlayDismiss = null;
+      fn();
+    }
   }
 
   private onHp(hp: number, max: number): void {
@@ -204,6 +223,7 @@ export class UIScene extends Phaser.Scene {
     const dismiss = (): void => {
       if (done) return;
       done = true;
+      this.overlayDismiss = null;
       this.input.keyboard?.off('keydown', dismiss);
       this.input.off('pointerdown', dismiss);
       this.tweens.add({
@@ -219,11 +239,13 @@ export class UIScene extends Phaser.Scene {
       });
     };
     this.time.delayedCall(5200, dismiss);
-    // Dismissable with any key or tap, a beat after it appears (so a mid-combo press doesn't eat it)
+    // Dismissable with any key, tap, or gamepad press, a beat after it appears (so a
+    // mid-combo press doesn't eat it)
     this.time.delayedCall(450, () => {
       if (done) return;
       this.input.keyboard?.once('keydown', dismiss);
       this.input.once('pointerdown', dismiss);
+      this.overlayDismiss = dismiss;
     });
   }
 
@@ -304,12 +326,14 @@ export class UIScene extends Phaser.Scene {
       const toTitle = (): void => {
         if (used) return;
         used = true;
+        this.overlayDismiss = null;
         this.scene.stop('game');
         this.scene.start('title');
         this.scene.stop();
       };
       this.input.keyboard?.once('keydown', toTitle);
       this.input.once('pointerdown', toTitle);
+      this.overlayDismiss = toTitle;
     });
   }
 }

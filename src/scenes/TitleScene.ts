@@ -2,6 +2,7 @@
 // and the first-launch content note.
 
 import Phaser from 'phaser';
+import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { pal } from '../systems/palette';
 import {
   DEFAULT_BINDINGS,
@@ -19,9 +20,18 @@ const H = 540;
 
 export class TitleScene extends Phaser.Scene {
   private overlayOpen = false;
+  /** When the content note is up, gamepad confirm triggers this (the play button). */
+  private noteConfirm: (() => void) | null = null;
 
   constructor() {
     super('title');
+  }
+
+  update(): void {
+    sampleGamepad(this.game.loop.frame);
+    if (!gpConfirmPressed()) return;
+    if (this.noteConfirm) this.noteConfirm();
+    else if (!this.overlayOpen) this.startGame();
   }
 
   create(): void {
@@ -173,13 +183,16 @@ export class TitleScene extends Phaser.Scene {
       .text(W / 2, 420, '[ got it — play ]', { fontFamily: 'monospace', fontSize: '18px', color: p.uiAccent })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
-    playBtn.on('pointerdown', () => {
+    const acceptNote = (): void => {
       settings.contentNoteSeen = true;
       saveSettings();
       cue('ui');
       overlay.destroy();
       this.overlayOpen = false;
-    });
+      this.noteConfirm = null;
+    };
+    playBtn.on('pointerdown', acceptNote);
+    this.noteConfirm = acceptNote;
     overlay.add(playBtn);
   }
 
@@ -200,7 +213,7 @@ export class TitleScene extends Phaser.Scene {
     );
     overlay.add(
       this.add
-        .text(W / 2, 152, 'click an action, then press the key you want\n(WASD and X always work too)', {
+        .text(W / 2, 152, 'click an action, then press the key you want\n(WASD and X always work too · gamepad: stick/d-pad moves, bottom button jumps, other face buttons attack)', {
           fontFamily: 'monospace',
           fontSize: '12px',
           color: p.uiDim,

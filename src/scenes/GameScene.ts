@@ -5,6 +5,7 @@ import Phaser from 'phaser';
 import { SpecterwaveBoss, BOSS_EVENTS, BOSS_MAX_HP } from '../entities/Boss';
 import { Blocker, Crowder, EVENTS, Enemy, Mimic, Starer } from '../entities/enemies';
 import { Player, PLAYER_MAX_HP } from '../entities/Player';
+import { sampleGamepad } from '../systems/gamepad';
 import { ActionInput } from '../systems/input';
 import { pal } from '../systems/palette';
 import { motionReduced, progress, saveProgress } from '../systems/settings';
@@ -308,6 +309,7 @@ export class GameScene extends Phaser.Scene {
   // --- main loop --------------------------------------------------------------
 
   update(_time: number, delta: number): void {
+    sampleGamepad(this.game.loop.frame);
     if (this.respawning || this.clearing) {
       this.inputMap.endFrame();
       return;
