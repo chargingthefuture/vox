@@ -12,6 +12,8 @@ export type CueName =
   | 'checkpoint'
   | 'boss-appear'
   | 'boss-down'
+  | 'deflect'
+  | 'alarm'
   | 'ui';
 
 /** Caption text per cue, shown when captions are on. */
@@ -24,6 +26,8 @@ export const CUE_CAPTIONS: Record<CueName, string> = {
   checkpoint: '*checkpoint chime*',
   'boss-appear': '*low rumble*',
   'boss-down': '*triumphant fanfare*',
+  deflect: '*fwip — right back at you*',
+  alarm: '*ding — name check*',
   ui: '*click*',
 };
 
@@ -88,6 +92,14 @@ export function cue(name: CueName): void {
       tone(392, 0.14, 'triangle', 0.12);
       tone(523, 0.14, 'triangle', 0.12, 0.12);
       tone(659, 0.22, 'triangle', 0.12, 0.24);
+      break;
+    case 'deflect':
+      tone(700, 0.07, 'square', 0.1);
+      tone(900, 0.09, 'square', 0.08, 0.04);
+      break;
+    case 'alarm':
+      tone(880, 0.12, 'sine', 0.1);
+      tone(880, 0.12, 'sine', 0.08, 0.18);
       break;
     case 'ui':
       tone(500, 0.05, 'sine', 0.06);

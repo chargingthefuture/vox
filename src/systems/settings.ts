@@ -34,8 +34,8 @@ export const BUILTIN_ALT_BINDINGS: Record<BindableAction, string[]> = {
 };
 
 export interface Progress {
-  /** Highest checkpoint reached in world 1 (index into the checkpoint list). */
-  world1Checkpoint: number;
+  /** Highest checkpoint reached per world id (index into that world's checkpoint list). */
+  checkpoints: Record<string, number>;
   /** Problem ids whose payoff card has been shown in full. */
   cardsSeen: number[];
   /** World ids cleared. */
@@ -55,7 +55,7 @@ const defaultSettings: Settings = {
 };
 
 const defaultProgress: Progress = {
-  world1Checkpoint: 0,
+  checkpoints: {},
   cardsSeen: [],
   worldsCleared: [],
 };
@@ -72,6 +72,22 @@ function load<T>(key: string, fallback: T): T {
 
 export const settings: Settings = load(SETTINGS_KEY, defaultSettings);
 export const progress: Progress = load(PROGRESS_KEY, defaultProgress);
+
+// Migrate the old single-world save shape (world1Checkpoint) into the per-world map.
+const legacy = progress as Progress & { world1Checkpoint?: number };
+if (typeof legacy.world1Checkpoint === 'number') {
+  if (!progress.checkpoints['1']) progress.checkpoints['1'] = legacy.world1Checkpoint;
+  delete legacy.world1Checkpoint;
+}
+
+export function getCheckpoint(worldId: number): number {
+  return progress.checkpoints[String(worldId)] ?? 0;
+}
+
+export function setCheckpoint(worldId: number, index: number): void {
+  progress.checkpoints[String(worldId)] = index;
+  saveProgress();
+}
 
 export function saveSettings(): void {
   try {
