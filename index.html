@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <title>VOX — take your voice back</title>
     <link
       rel="icon"
@@ -17,24 +20,63 @@
       body {
         margin: 0;
         padding: 0;
-        background: #0d0d17;
+        /* Match the game sky so any letterboxing blends in instead of reading as broken */
+        background: #11122b;
         height: 100%;
         overflow: hidden;
+        overscroll-behavior: none;
       }
       #game {
-        width: 100%;
-        height: 100%;
+        /* Fixed to the visual viewport: no address-bar overflow on phones */
+        position: fixed;
+        inset: 0;
+        height: 100dvh;
         display: flex;
         align-items: center;
         justify-content: center;
+        touch-action: none;
       }
       canvas {
-        image-rendering: pixelated;
+        touch-action: none;
+      }
+      /* The game is a landscape side-scroller. On a phone held upright, ask for a turn
+         instead of showing a sliver of game in a wall of black. */
+      #rotate {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        background: #11122b;
+        color: #f7f7ff;
+        font-family: monospace;
+        font-size: 18px;
+        line-height: 1.6;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+      }
+      #rotate .turn {
+        display: block;
+        font-size: 44px;
+        margin-bottom: 16px;
+      }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate {
+          display: flex;
+        }
       }
     </style>
   </head>
   <body>
     <div id="game"></div>
+    <div id="rotate">
+      <div>
+        <span class="turn">📱↻</span>
+        VOX plays sideways.<br />
+        Turn your phone to landscape.
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

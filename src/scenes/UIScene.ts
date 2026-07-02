@@ -6,8 +6,9 @@ import { BOSS_EVENTS } from '../entities/Boss';
 import { EVENTS } from '../entities/enemies';
 import { getProblem } from '../data/problems';
 import { getWorld } from '../data/worlds';
+import { virtualPress, virtualRelease } from '../systems/input';
 import { pal } from '../systems/palette';
-import { progress, saveProgress, settings } from '../systems/settings';
+import { progress, saveProgress, settings, type BindableAction } from '../systems/settings';
 import { onCaption } from '../systems/sound';
 import { UI_EVENTS } from './GameScene';
 
@@ -61,6 +62,8 @@ export class UIScene extends Phaser.Scene {
 
     onCaption((text) => this.showCaption(text));
 
+    if (this.sys.game.device.input.touch) this.buildTouchControls();
+
     const g = this.game.events;
     g.on(UI_EVENTS.hp, this.onHp, this);
     g.on(EVENTS.problemDefeated, this.onProblemDefeated, this);
@@ -75,6 +78,40 @@ export class UIScene extends Phaser.Scene {
       g.off(UI_EVENTS.worldClear, this.onWorldClear, this);
       g.off(UI_EVENTS.respawn, this.onRespawn, this);
     });
+  }
+
+  // On-screen buttons for phones/tablets: move on the left, jump + attack on the right.
+  // They feed the same action-input layer as the keyboard.
+  private buildTouchControls(): void {
+    const p = pal();
+    // Two thumbs at once (move + jump/attack) need extra touch pointers
+    this.input.addPointer(3);
+
+    const button = (x: number, y: number, r: number, label: string, action: BindableAction): void => {
+      const zone = this.add.circle(x, y, r, p.uiCard, 0.35).setDepth(95).setStrokeStyle(2, 0xffffff, 0.25);
+      this.add
+        .text(x, y, label, { fontFamily: 'monospace', fontSize: `${Math.round(r * 0.7)}px`, color: p.uiText })
+        .setOrigin(0.5)
+        .setAlpha(0.8)
+        .setDepth(96);
+      zone.setInteractive({ useHandCursor: false });
+      const press = (): void => {
+        zone.setFillStyle(p.uiCard, 0.7);
+        virtualPress(action);
+      };
+      const release = (): void => {
+        zone.setFillStyle(p.uiCard, 0.35);
+        virtualRelease(action);
+      };
+      zone.on('pointerdown', press);
+      zone.on('pointerup', release);
+      zone.on('pointerout', release);
+    };
+
+    button(84, H - 70, 46, '◀', 'left');
+    button(196, H - 70, 46, '▶', 'right');
+    button(W - 196, H - 70, 46, '✦', 'attack');
+    button(W - 84, H - 70, 46, '⤒', 'jump');
   }
 
   private onHp(hp: number, max: number): void {
@@ -168,6 +205,7 @@ export class UIScene extends Phaser.Scene {
       if (done) return;
       done = true;
       this.input.keyboard?.off('keydown', dismiss);
+      this.input.off('pointerdown', dismiss);
       this.tweens.add({
         targets: card,
         y: H + 60,
@@ -181,9 +219,11 @@ export class UIScene extends Phaser.Scene {
       });
     };
     this.time.delayedCall(5200, dismiss);
-    // Dismissable with any key, a beat after it appears (so a mid-combo press doesn't eat it)
+    // Dismissable with any key or tap, a beat after it appears (so a mid-combo press doesn't eat it)
     this.time.delayedCall(450, () => {
-      if (!done) this.input.keyboard?.once('keydown', dismiss);
+      if (done) return;
+      this.input.keyboard?.once('keydown', dismiss);
+      this.input.once('pointerdown', dismiss);
     });
   }
 
@@ -248,7 +288,7 @@ export class UIScene extends Phaser.Scene {
 
     overlay.add(
       this.add
-        .text(W / 2, H - 44, 'press any key — Worlds 2–7 are on their way', {
+        .text(W / 2, H - 44, 'press any key or tap — Worlds 2–7 are on their way', {
           fontFamily: 'monospace',
           fontSize: '14px',
           color: p.uiDim,
@@ -260,11 +300,16 @@ export class UIScene extends Phaser.Scene {
     this.tweens.add({ targets: overlay, alpha: 1, duration: 400 });
 
     this.time.delayedCall(900, () => {
-      this.input.keyboard?.once('keydown', () => {
+      let used = false;
+      const toTitle = (): void => {
+        if (used) return;
+        used = true;
         this.scene.stop('game');
         this.scene.start('title');
         this.scene.stop();
-      });
+      };
+      this.input.keyboard?.once('keydown', toTitle);
+      this.input.once('pointerdown', toTitle);
     });
   }
 }
