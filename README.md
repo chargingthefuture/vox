@@ -56,6 +56,9 @@ Worlds 2–7 are next, one world at a time.
 | Jump | Space, W, or ↑ |
 | Attack (combo: press again) | J or X |
 
+On phones and tablets, on-screen touch buttons appear (move on the left, attack and jump
+on the right). The game plays sideways — portrait shows a rotate prompt.
+
 ## Development
 
 ```sh

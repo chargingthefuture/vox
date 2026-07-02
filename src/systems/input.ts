@@ -6,6 +6,19 @@ import { BUILTIN_ALT_BINDINGS, settings, type BindableAction } from './settings'
 
 const GAME_CODES = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
+// Virtual (touch-button) input, shared between the on-screen buttons and ActionInput.
+const virtualDown = new Set<BindableAction>();
+const virtualPressed = new Set<BindableAction>();
+
+export function virtualPress(action: BindableAction): void {
+  if (!virtualDown.has(action)) virtualPressed.add(action);
+  virtualDown.add(action);
+}
+
+export function virtualRelease(action: BindableAction): void {
+  virtualDown.delete(action);
+}
+
 export class ActionInput {
   private down = new Set<string>();
   private pressed = new Set<string>();
@@ -30,6 +43,8 @@ export class ActionInput {
     window.removeEventListener('keyup', this.onKeyUp);
     this.down.clear();
     this.pressed.clear();
+    virtualDown.clear();
+    virtualPressed.clear();
   }
 
   private codes(action: BindableAction): string[] {
@@ -37,16 +52,17 @@ export class ActionInput {
   }
 
   isDown(action: BindableAction): boolean {
-    return this.codes(action).some((c) => this.down.has(c));
+    return virtualDown.has(action) || this.codes(action).some((c) => this.down.has(c));
   }
 
   justPressed(action: BindableAction): boolean {
-    return this.codes(action).some((c) => this.pressed.has(c));
+    return virtualPressed.has(action) || this.codes(action).some((c) => this.pressed.has(c));
   }
 
   /** Call at the end of each scene update to clear one-frame presses. */
   endFrame(): void {
     this.pressed.clear();
+    virtualPressed.clear();
   }
 }
 
