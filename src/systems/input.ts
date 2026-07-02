@@ -2,6 +2,7 @@
 // settings plus the built-in alternates (WASD + X), tracked from raw KeyboardEvent codes
 // so rebinding works for any physical key.
 
+import { gpDown, gpJustPressed } from './gamepad';
 import { BUILTIN_ALT_BINDINGS, settings, type BindableAction } from './settings';
 
 const GAME_CODES = new Set(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
@@ -52,11 +53,13 @@ export class ActionInput {
   }
 
   isDown(action: BindableAction): boolean {
-    return virtualDown.has(action) || this.codes(action).some((c) => this.down.has(c));
+    return virtualDown.has(action) || gpDown(action) || this.codes(action).some((c) => this.down.has(c));
   }
 
   justPressed(action: BindableAction): boolean {
-    return virtualPressed.has(action) || this.codes(action).some((c) => this.pressed.has(c));
+    return (
+      virtualPressed.has(action) || gpJustPressed(action) || this.codes(action).some((c) => this.pressed.has(c))
+    );
   }
 
   /** Call at the end of each scene update to clear one-frame presses. */
