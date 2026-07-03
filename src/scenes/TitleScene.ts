@@ -3,10 +3,12 @@
 
 import Phaser from 'phaser';
 import { WORLDS } from '../data/worlds';
+import { addSceneFX, headingStyle, textShadow } from '../systems/fx';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { pal } from '../systems/palette';
 import {
   DEFAULT_BINDINGS,
+  motionReduced,
   progress,
   saveSettings,
   settings,
@@ -44,12 +46,26 @@ export class TitleScene extends Phaser.Scene {
     this.add.rectangle(W / 2, H - 90, W, 180, p.skyBottom);
     this.add.rectangle(W / 2, H - 20, W, 40, p.ground);
 
-    this.add
-      .text(W / 2, 92, 'VOX', { fontFamily: 'monospace', fontSize: '96px', color: p.uiText, fontStyle: 'bold' })
-      .setOrigin(0.5);
-    this.add
-      .text(W / 2, 158, 'take your voice back', { fontFamily: 'monospace', fontSize: '20px', color: p.uiAccent })
-      .setOrigin(0.5);
+    // Distant drifting skyline behind the title, for a little depth.
+    for (let x = 40; x < W; x += 130) {
+      const h = 50 + ((x * 29) % 90);
+      this.add.rectangle(x, H - 110 - h / 2 + 40, 60 + ((x * 11) % 40), h, p.ground, 0.4).setDepth(-5);
+    }
+
+    const logo = headingStyle(
+      this.add
+        .text(W / 2, 92, 'VOX', { fontFamily: 'monospace', fontSize: '96px', color: p.uiText, fontStyle: 'bold' })
+        .setOrigin(0.5),
+    );
+    // A slow idle breath on the logo (skipped when motion is reduced).
+    if (!motionReduced()) {
+      this.tweens.add({ targets: logo, scale: 1.03, duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+    textShadow(
+      this.add
+        .text(W / 2, 158, 'take your voice back', { fontFamily: 'monospace', fontSize: '20px', color: p.uiAccent })
+        .setOrigin(0.5),
+    );
 
     const allDone = WORLDS.filter((w) => w.implemented.length > 0).every((w) =>
       progress.worldsCleared.includes(w.id),
@@ -129,18 +145,27 @@ export class TitleScene extends Phaser.Scene {
     const top = 242;
     menu.forEach((item, i) => {
       const baseColor = item.locked ? p.uiDim : item.world ? p.uiText : p.uiDim;
-      const t = this.add
-        .text(W / 2, top + i * rowGap, item.label(), {
-          fontFamily: 'monospace',
-          fontSize: item.world ? '17px' : '14px',
-          color: baseColor,
-        })
-        .setOrigin(0.5)
-        .setAlpha(item.locked ? 0.6 : 1);
+      const t = textShadow(
+        this.add
+          .text(W / 2, top + i * rowGap, item.label(), {
+            fontFamily: 'monospace',
+            fontSize: item.world ? '17px' : '14px',
+            color: baseColor,
+          })
+          .setOrigin(0.5)
+          .setAlpha(item.locked ? 0.6 : 1),
+        4,
+      );
       if (!item.locked) {
         t.setInteractive({ useHandCursor: true });
-        t.on('pointerover', () => t.setColor(p.uiAccent));
-        t.on('pointerout', () => t.setColor(baseColor));
+        t.on('pointerover', () => {
+          t.setColor(p.uiAccent);
+          this.tweens.add({ targets: t, scale: 1.06, duration: 120, ease: 'Quad.easeOut' });
+        });
+        t.on('pointerout', () => {
+          t.setColor(baseColor);
+          this.tweens.add({ targets: t, scale: 1, duration: 120, ease: 'Quad.easeOut' });
+        });
         t.on('pointerdown', () => {
           if (this.overlayOpen) return;
           cue('ui');
@@ -148,6 +173,9 @@ export class TitleScene extends Phaser.Scene {
         });
       }
     });
+
+    addSceneFX(this);
+    this.cameras.main.fadeIn(320, 0, 0, 0);
 
     this.input.keyboard?.on('keydown-ENTER', () => {
       if (!this.overlayOpen) this.startGame();
@@ -172,8 +200,14 @@ export class TitleScene extends Phaser.Scene {
   /** Start a world; with no argument, the furthest open world. */
   private startGame(worldId?: number): void {
     if (this.overlayOpen) return;
-    const target = worldId ?? this.nextOpenWorld().id;
-    this.scene.start(`world${target}`);
+    this.fadeToWorld(worldId ?? this.nextOpenWorld().id);
+  }
+
+  /** Fade the title out, then launch the world (the world fades itself in). */
+  private fadeToWorld(id: number): void {
+    const cam = this.cameras.main;
+    cam.fadeOut(240, 0, 0, 0);
+    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.scene.start(`world${id}`));
   }
 
   // --- world select -------------------------------------------------------------
@@ -224,7 +258,7 @@ export class TitleScene extends Phaser.Scene {
       t.on('pointerdown', () => {
         cue('ui');
         this.overlayOpen = false;
-        this.scene.start(`world${w.id}`);
+        this.fadeToWorld(w.id);
       });
       overlay.add(t);
     });

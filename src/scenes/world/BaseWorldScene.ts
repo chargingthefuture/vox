@@ -7,6 +7,7 @@ import type { BossBase, BossHost } from '../../entities/BossBase';
 import { Enemy } from '../../entities/enemies';
 import { Player, PLAYER_MAX_HP } from '../../entities/Player';
 import { EVENTS } from '../../systems/events';
+import { addSceneFX, cameraPunch, impactRing, makeDust, makeSparks } from '../../systems/fx';
 import { sampleGamepad } from '../../systems/gamepad';
 import { ActionInput } from '../../systems/input';
 import { pal } from '../../systems/palette';
@@ -53,8 +54,11 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
   boss: BossBase | null = null;
   protected bossStarted = false;
   protected confetti!: Phaser.GameObjects.Particles.ParticleEmitter;
+  protected sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
+  protected dust!: Phaser.GameObjects.Particles.ParticleEmitter;
   private beacons: { sprite: Phaser.GameObjects.Image; index: number }[] = [];
   private lastSwingHit = new Map<number, Set<object>>();
+  private wasGrounded = true;
   protected respawning = false;
   protected clearing = false;
 
@@ -102,6 +106,8 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
       emitting: false,
     });
     this.confetti.setDepth(20);
+    this.sparks = makeSparks(this);
+    this.dust = makeDust(this);
 
     // Beacons (checkpoints)
     for (let i = 1; i < this.checkpointXs.length; i++) {
@@ -122,6 +128,9 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
       g.off(EVENTS.playerHit, this.onPlayerHitRequest, this);
       g.off(EVENTS.problemDefeated, this.onProblemDefeated, this);
     });
+
+    addSceneFX(this);
+    this.cameras.main.fadeIn(320, 0, 0, 0);
 
     this.scene.launch('ui');
     this.time.delayedCall(0, () => {
@@ -192,6 +201,9 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
 
   onBossDown(x: number, y: number): void {
     this.confetti.explode(48, x, y);
+    this.sparks.explode(24, x, y);
+    impactRing(this, x, y, true);
+    cameraPunch(this, this.cameras.main.zoom, 0.09, 300);
     this.boss = null;
     this.game.events.emit(EVENTS.bossHp, 0, 1, '', '');
     if (this.clearing) return;
@@ -260,6 +272,11 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
       t.hit(damage, dir, box.finisher);
       cue(box.finisher ? 'combo-finish' : 'hit');
       this.hitstop(box.finisher ? 70 : 45);
+      // Impact juice: a spark burst and an expanding ring where the blow lands
+      const hx = t.x - dir * 6;
+      const hy = t.y;
+      this.sparks.explode(box.finisher ? 12 : 6, hx, hy);
+      impactRing(this, hx, hy, box.finisher);
       if (box.finisher && !motionReduced()) this.cameras.main.shake(70, 0.003);
     }
     this.processAttackExtras(box);
@@ -284,6 +301,13 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
     // frame's enemy updates (e.g. the noise emitter) can lower it again for next frame.
     this.player.updatePlayer(delta, this.inputMap);
     this.player.slowFactor = 1;
+
+    // A puff of dust the moment the player lands from the air.
+    const grounded = (this.player.body as Phaser.Physics.Arcade.Body).blocked.down;
+    if (grounded && !this.wasGrounded) {
+      this.dust.emitParticleAt(this.player.x, this.player.y + 18, 5);
+    }
+    this.wasGrounded = grounded;
 
     for (const e of this.enemies) {
       if (e.active && !e.defeated) e.updateEnemy(delta, this.player);
