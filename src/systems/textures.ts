@@ -32,6 +32,18 @@ const KEYS = [
   'vox-siren',
   'vox-boss3',
   'vox-holdwave',
+  'vox-car',
+  'vox-neighbor',
+  'vox-antenna',
+  'vox-window',
+  'vox-flash',
+  'vox-drone',
+  'vox-lurker',
+  'vox-prowler',
+  'vox-hummer',
+  'vox-door',
+  'vox-bark',
+  'vox-boss4',
 ] as const;
 
 let generatedFor: 'normal' | 'calm' | null = null;
@@ -338,6 +350,151 @@ export function ensureTextures(scene: Phaser.Scene): void {
     g.fillRoundedRect(0, 4, 44, 16, 8);
     g.fillStyle(p.projectile, 0.7);
     g.fillRoundedRect(6, 9, 32, 8, 4);
+  });
+
+  // --- World 4: Specterrealm ---
+
+  // Parked car (#3) — a watcher's sedan.
+  gen('vox-car', 52, 30, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(2, 12, 48, 14, 4); // body
+    g.fillRoundedRect(12, 4, 28, 12, 4); // cabin
+    g.fillStyle(p.playerAccent, 0.5);
+    g.fillRect(16, 7, 20, 7); // windshield — someone inside
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(14, 27, 4);
+    g.fillCircle(38, 27, 4); // wheels
+  });
+
+  // Neighbor / new-neighbor / peeker (#5, #10) — a plain standing figure.
+  gen('vox-neighbor', 28, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(4, 10, 20, 28, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(14, 8, 7); // head
+    g.fillStyle(p.playerAccent, 0.8);
+    g.fillRect(9, 6, 3, 2);
+    g.fillRect(16, 6, 3, 2); // watching eyes
+  });
+
+  // Antenna (#6) — a fresh mast on a pole.
+  gen('vox-antenna', 32, 56, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(14, 12, 4, 44); // pole
+    g.lineStyle(2, p.enemy, 1);
+    g.lineBetween(16, 14, 4, 4);
+    g.lineBetween(16, 14, 28, 4);
+    g.lineBetween(16, 20, 7, 12);
+    g.lineBetween(16, 20, 25, 12);
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(16, 12, 3); // blinking tip (steady)
+  });
+
+  // Strange window-light (#12) — an odd-colored glow.
+  gen('vox-window', 34, 34, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(2, 2, 30, 30); // frame
+    g.fillStyle(p.projectile, 0.85);
+    g.fillRect(6, 6, 22, 22); // the glow
+    g.lineStyle(2, p.enemyAccent, 1);
+    g.lineBetween(17, 6, 17, 28);
+    g.lineBetween(6, 17, 28, 17); // panes
+  });
+
+  // Light-flash (#32) — a steady starburst (never a strobe).
+  gen('vox-flash', 30, 30, () => {
+    g.fillStyle(p.projectile, 0.9);
+    g.fillCircle(15, 15, 6);
+    g.lineStyle(3, p.projectile, 0.7);
+    for (let a = 0; a < 8; a++) {
+      const th = (a / 8) * Math.PI * 2;
+      g.lineBetween(15 + Math.cos(th) * 8, 15 + Math.sin(th) * 8, 15 + Math.cos(th) * 14, 15 + Math.sin(th) * 14);
+    }
+  });
+
+  // Drone (#7) — a quadcopter eye.
+  gen('vox-drone', 32, 20, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(10, 6, 12, 8, 3); // hull
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillCircle(16, 10, 2.5); // lens
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(0, 4, 10, 2);
+    g.fillRect(22, 4, 10, 2); // rotor arms
+    g.fillCircle(3, 5, 3);
+    g.fillCircle(29, 5, 3);
+  });
+
+  // Lurker (#46) — a coat-and-briefcase figure.
+  gen('vox-lurker', 28, 40, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(5, 10, 18, 28, 5); // long coat
+    g.fillStyle(p.enemy, 1);
+    g.fillCircle(14, 8, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(20, 24, 7, 8); // briefcase
+  });
+
+  // Prowler (#36) — a shadowy crouched shape.
+  gen('vox-prowler', 32, 36, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(4, 12, 24, 22, 8);
+    g.fillCircle(20, 12, 7);
+    g.fillStyle(p.hurt, 0.8);
+    g.fillCircle(22, 11, 2); // one watching eye
+  });
+
+  // Hummer (#22) — a utility box that buzzes.
+  gen('vox-hummer', 32, 44, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(2, 4, 28, 36, 3);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(6, 10, 20, 4);
+    g.fillRect(6, 18, 20, 4);
+    g.fillRect(6, 26, 20, 4); // vents
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(24, 35, 2.5); // status light
+  });
+
+  // Revolving door (#11) — a doorway with a turnstile cross.
+  gen('vox-door', 40, 56, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(2, 2, 36, 54);
+    g.fillStyle(p.enemy, 1);
+    g.fillRect(6, 8, 28, 46); // opening
+    g.lineStyle(4, p.enemyAccent, 1);
+    g.lineBetween(20, 8, 20, 54);
+    g.lineBetween(8, 31, 32, 31); // revolving cross
+  });
+
+  // Bark-speaker (#50) — a loud-hailer on a post.
+  gen('vox-bark', 32, 28, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(14, 14, 4, 14); // post
+    g.fillStyle(p.enemy, 1);
+    g.fillTriangle(6, 4, 6, 20, 22, 12); // horn
+    g.fillStyle(p.projectile, 0.8);
+    g.fillCircle(24, 12, 2);
+    g.fillCircle(28, 12, 1.5); // sound blips
+  });
+
+  // Specterrealm — the boss. A watchtower eye over a fanned-out block.
+  gen('vox-boss4', 96, 112, () => {
+    g.fillStyle(p.boss, 1);
+    g.fillEllipse(48, 46, 86, 82);
+    g.fillTriangle(8, 76, 26, 76, 17, 104);
+    g.fillTriangle(30, 80, 48, 80, 39, 108);
+    g.fillTriangle(52, 80, 70, 80, 61, 108);
+    g.fillTriangle(72, 76, 90, 76, 81, 104);
+    // One enormous surveillance eye
+    g.fillStyle(p.playerAccent, 1);
+    g.fillEllipse(48, 44, 56, 40);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(48, 44, 14);
+    g.fillStyle(p.hurt, 0.9);
+    g.fillCircle(48, 44, 6); // a red pupil, always watching
+    g.fillStyle(p.bossAccent, 1);
+    g.fillRect(40, 70, 16, 4);
   });
 
   g.destroy();
