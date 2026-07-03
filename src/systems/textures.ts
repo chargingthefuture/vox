@@ -18,6 +18,9 @@ const KEYS = [
   'vox-beacon',
   'vox-beacon-lit',
   'vox-particle',
+  'vox-spark',
+  'vox-dust',
+  'vox-hitring',
   'vox-slanderer',
   'vox-gatekeeper',
   'vox-recorder',
@@ -191,6 +194,30 @@ export function ensureTextures(scene: Phaser.Scene): void {
   gen('vox-particle', 6, 6, () => {
     g.fillStyle(0xffffff, 1);
     g.fillRect(0, 0, 6, 6);
+  });
+
+  // A soft round spark for impact bursts (fades to nothing, additive-blended).
+  gen('vox-spark', 12, 12, () => {
+    g.fillStyle(0xffffff, 0.35);
+    g.fillCircle(6, 6, 6);
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(6, 6, 3.5);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(6, 6, 1.6);
+  });
+
+  // A soft puff of dust for landings.
+  gen('vox-dust', 14, 14, () => {
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(7, 7, 7);
+    g.fillStyle(0xffffff, 0.8);
+    g.fillCircle(7, 7, 3);
+  });
+
+  // A thin ring that expands on a solid hit.
+  gen('vox-hitring', 40, 40, () => {
+    g.lineStyle(3, 0xffffff, 0.9);
+    g.strokeCircle(20, 20, 17);
   });
 
   // --- World 2: Spectervox ---

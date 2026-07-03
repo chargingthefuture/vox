@@ -5,6 +5,7 @@ import Phaser from 'phaser';
 import { getProblem } from '../data/problems';
 import { getWorld, WORLDS } from '../data/worlds';
 import { EVENTS } from '../systems/events';
+import { headingStyle, textShadow } from '../systems/fx';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { virtualPress, virtualRelease } from '../systems/input';
 import { pal } from '../systems/palette';
@@ -41,18 +42,20 @@ export class UIScene extends Phaser.Scene {
     this.cardQueue = [];
     this.cardShowing = false;
 
-    this.hearts = this.add
-      .text(16, 12, '', { fontFamily: 'monospace', fontSize: '24px', color: p.uiText })
-      .setDepth(100);
+    this.hearts = textShadow(
+      this.add.text(16, 12, '', { fontFamily: 'monospace', fontSize: '24px', color: p.uiText }).setDepth(100),
+    );
 
-    this.worldLabel = this.add
-      .text(W / 2, 14, '', {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: p.uiDim,
-      })
-      .setOrigin(0.5, 0)
-      .setDepth(100);
+    this.worldLabel = textShadow(
+      this.add
+        .text(W / 2, 14, '', {
+          fontFamily: 'monospace',
+          fontSize: '15px',
+          color: p.uiDim,
+        })
+        .setOrigin(0.5, 0)
+        .setDepth(100),
+    );
 
     this.repBar = this.add.graphics().setDepth(100);
     this.repLabel = this.add
@@ -60,16 +63,20 @@ export class UIScene extends Phaser.Scene {
       .setDepth(100);
 
     this.bossBar = this.add.graphics().setDepth(100);
-    this.bossLabel = this.add
-      .text(W / 2, 46, '', { fontFamily: 'monospace', fontSize: '13px', color: p.uiText })
-      .setOrigin(0.5, 0)
-      .setDepth(100)
-      .setVisible(false);
+    this.bossLabel = textShadow(
+      this.add
+        .text(W / 2, 46, '', { fontFamily: 'monospace', fontSize: '13px', color: p.uiText })
+        .setOrigin(0.5, 0)
+        .setDepth(100)
+        .setVisible(false),
+    );
 
-    this.captionText = this.add
-      .text(W - 14, H - 12, '', { fontFamily: 'monospace', fontSize: '14px', color: p.uiDim })
-      .setOrigin(1, 1)
-      .setDepth(100);
+    this.captionText = textShadow(
+      this.add
+        .text(W - 14, H - 12, '', { fontFamily: 'monospace', fontSize: '14px', color: p.uiDim })
+        .setOrigin(1, 1)
+        .setDepth(100),
+    );
 
     onCaption((text) => this.showCaption(text));
 
@@ -175,10 +182,13 @@ export class UIScene extends Phaser.Scene {
     this.bossBar.clear();
     if (hp <= 0) return;
     const w = 420;
-    this.bossBar.fillStyle(p.uiCard, 0.9).fillRoundedRect(W / 2 - w / 2, 32, w, 10, 4);
-    this.bossBar
-      .fillStyle(Phaser.Display.Color.HexStringToColor(p.uiAccent).color, 1)
-      .fillRoundedRect(W / 2 - w / 2 + 2, 34, Math.max(4, (w - 4) * (hp / max)), 6, 3);
+    const x0 = W / 2 - w / 2;
+    const accent = Phaser.Display.Color.HexStringToColor(p.uiAccent).color;
+    // A framed track with a soft outline, then the fill — reads as a real health bar.
+    this.bossBar.fillStyle(0x000000, 0.35).fillRoundedRect(x0 - 2, 30, w + 4, 14, 6);
+    this.bossBar.fillStyle(p.uiCard, 0.95).fillRoundedRect(x0, 32, w, 10, 4);
+    this.bossBar.fillStyle(accent, 1).fillRoundedRect(x0 + 2, 34, Math.max(4, (w - 4) * (hp / max)), 6, 3);
+    this.bossBar.lineStyle(1, accent, 0.5).strokeRoundedRect(x0, 32, w, 10, 4);
   }
 
   private showCaption(text: string): void {
@@ -217,9 +227,12 @@ export class UIScene extends Phaser.Scene {
     const verb = problem.solutions.length > 1 ? 'help' : 'helps';
 
     const card = this.add.container(W / 2, H + 60).setDepth(110);
+    const accent = Phaser.Display.Color.HexStringToColor(p.uiAccent).color;
     const bg = this.add.graphics();
-    bg.fillStyle(p.uiCard, 0.96).fillRoundedRect(-330, -44, 660, 88, 10);
-    bg.lineStyle(2, Phaser.Display.Color.HexStringToColor(p.uiAccent).color, 0.8).strokeRoundedRect(-330, -44, 660, 88, 10);
+    bg.fillStyle(0x000000, 0.35).fillRoundedRect(-334, -42, 668, 92, 12); // drop shadow
+    bg.fillStyle(p.uiCard, 0.97).fillRoundedRect(-330, -44, 660, 88, 10);
+    bg.fillStyle(accent, 1).fillRoundedRect(-330, -44, 6, 88, 3); // accent spine
+    bg.lineStyle(2, accent, 0.8).strokeRoundedRect(-330, -44, 660, 88, 10);
     card.add(bg);
     card.add(
       this.add
@@ -288,7 +301,7 @@ export class UIScene extends Phaser.Scene {
     const overlay = this.add.container(0, 0).setDepth(200);
     const dim = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.82);
     overlay.add(dim);
-    overlay.add(
+    const clearTitle = headingStyle(
       this.add
         .text(W / 2, 64, `${world.name.toUpperCase()} — CLEARED`, {
           fontFamily: 'monospace',
@@ -297,6 +310,10 @@ export class UIScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
     );
+    overlay.add(clearTitle);
+    // A gentle pop on the headline (skipped when motion is reduced by the tween scale staying 1)
+    clearTitle.setScale(0.9);
+    this.tweens.add({ targets: clearTitle, scale: 1, duration: 320, ease: 'Back.easeOut' });
     overlay.add(
       this.add
         .text(W / 2, 102, 'The Specterati shrink. Your voice does not.', {

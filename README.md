@@ -106,6 +106,10 @@ world and the title and final screen mark it: VOX, Bane of the Specterati.
 - **Calm mode**, one tap: soft palette, sound off, no shakes or flashes.
 - Reduced motion is the default; nothing in the game strobes or flashes — beam attacks
   telegraph as steady lines.
+- Visual polish (hit sparks, impact rings, landing dust, a boss-defeat camera punch, a
+  subtle bloom, and the title logo's idle breath) is all gated behind calm mode / reduced
+  motion: the motion-heavy touches switch off, and calm mode also drops the bloom. A static
+  vignette and text shadows (readability, not motion) stay on.
 - Captions for all audio cues, on by default.
 - Remappable controls (title screen → controls), with WASD + X always active as alternates.
 - Settings and progress stay on your device (browser localStorage). No accounts, no
