@@ -3,7 +3,7 @@
 
 import Phaser from 'phaser';
 import { getProblem } from '../data/problems';
-import { getWorld } from '../data/worlds';
+import { getWorld, WORLDS } from '../data/worlds';
 import { EVENTS } from '../systems/events';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { virtualPress, virtualRelease } from '../systems/input';
@@ -336,8 +336,11 @@ export class UIScene extends Phaser.Scene {
     col(lines.slice(0, half), 60);
     col(lines.slice(half), 500);
 
+    const next = WORLDS.find((w) => w.id === worldId + 1);
     const nextUp =
-      worldId === 1 ? 'World 2: Spectervox is now open' : 'Worlds 3–7 are on their way';
+      next && next.implemented.length > 0
+        ? `World ${next.id}: ${next.name.replace(/^The /, '')} is now open`
+        : `Worlds ${worldId + 1}–7 are on their way`;
     overlay.add(
       this.add
         .text(W / 2, H - 44, `press any key or tap — ${nextUp}`, {
