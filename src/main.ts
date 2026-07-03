@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import * as savecode from './systems/savecode';
 import { TitleScene } from './scenes/TitleScene';
 import { UIScene } from './scenes/UIScene';
 import { World1Scene } from './scenes/world/World1Scene';
@@ -36,3 +37,8 @@ new Phaser.Game({
     UIScene,
   ],
 });
+
+// Test-only handle for the save code helpers (used by the automated browser checks).
+if (new URLSearchParams(location.search).has('debug')) {
+  (window as unknown as { __voxSave: typeof savecode }).__voxSave = savecode;
+}

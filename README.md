@@ -110,6 +110,13 @@ world and the title and final screen mark it: VOX, Bane of the Specterati.
 - Remappable controls (title screen → controls), with WASD + X always active as alternates.
 - Settings and progress stay on your device (browser localStorage). No accounts, no
   tracking, fully playable offline once loaded.
+- **No hard lockouts.** Because there's no server to save to, every world is selectable from
+  the title's "select world" menu — cleared worlds are marked ✓, but you can jump to any of
+  them. A lock would only strand honest players who lost their local save.
+- **Save / load progress** (title → "save / load progress"): copy a one-line progress code or
+  download a backup file, then paste the code or load the file back after clearing your
+  browser or on another device. It's an honesty tool, not a lock — anyone can pick a level
+  anyway — it just lets you carry your spot with you.
 
 ## Controls (defaults)
 

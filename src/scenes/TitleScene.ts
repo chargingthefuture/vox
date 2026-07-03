@@ -14,6 +14,7 @@ import {
 } from '../systems/settings';
 import { cue } from '../systems/sound';
 import { keyLabel } from '../systems/input';
+import { exportSaveCode, exportSaveJSON, importSave } from '../systems/savecode';
 import { ensureTextures } from '../systems/textures';
 
 const W = 960;
@@ -120,11 +121,12 @@ export class TitleScene extends Phaser.Scene {
         },
       },
       { label: () => 'controls…', action: () => this.openControls() },
+      { label: () => 'save / load progress…', action: () => this.openSaves() },
     );
 
-    // Fit the rows between the intro text (~220) and VOX at the bottom; tighten as worlds grow.
-    const rowGap = menu.length > 8 ? 25 : 29;
-    const top = 244;
+    // Fit the rows between the intro text (~220) and VOX at the bottom; tighten as rows grow.
+    const rowGap = menu.length > 7 ? 24 : 29;
+    const top = 242;
     menu.forEach((item, i) => {
       const baseColor = item.locked ? p.uiDim : item.world ? p.uiText : p.uiDim;
       const t = this.add
@@ -189,7 +191,7 @@ export class TitleScene extends Phaser.Scene {
     );
     overlay.add(
       this.add
-        .text(W / 2, 92, 'each opens once you clear the one before it', {
+        .text(W / 2, 92, 'pick any world — cleared ones are marked ✓', {
           fontFamily: 'monospace',
           fontSize: '12px',
           color: p.uiDim,
@@ -200,28 +202,148 @@ export class TitleScene extends Phaser.Scene {
     const top = 132;
     const gap = Math.min(34, (H - 190) / playable.length);
     playable.forEach((w, i) => {
-      const open = this.worldOpen(w.id);
+      // Every world is selectable. The campaign still shows what you've reached and cleared,
+      // but nothing is hard-locked: this is offline with no server, so a lock would only risk
+      // stranding honest players who lost their saved progress.
+      const reached = this.worldOpen(w.id);
       const cleared = progress.worldsCleared.includes(w.id);
       const shortName = w.name.replace(/^The /, '');
-      const label = open
-        ? `World ${w.id}: ${shortName}${cleared ? '  ✓' : ''}`
-        : `World ${w.id}: ${shortName} — locked`;
-      const color = open ? p.uiText : p.uiDim;
+      const tag = cleared ? '  ✓' : reached ? '' : '  ·';
+      const color = reached ? p.uiText : p.uiDim;
       const t = this.add
-        .text(W / 2, top + i * gap, label, { fontFamily: 'monospace', fontSize: '16px', color })
+        .text(W / 2, top + i * gap, `World ${w.id}: ${shortName}${tag}`, {
+          fontFamily: 'monospace',
+          fontSize: '16px',
+          color,
+        })
         .setOrigin(0.5)
-        .setAlpha(open ? 1 : 0.55);
-      if (open) {
-        t.setInteractive({ useHandCursor: true });
-        t.on('pointerover', () => t.setColor(p.uiAccent));
-        t.on('pointerout', () => t.setColor(color));
-        t.on('pointerdown', () => {
-          cue('ui');
-          this.overlayOpen = false;
-          this.scene.start(`world${w.id}`);
-        });
-      }
+        .setAlpha(reached ? 1 : 0.7)
+        .setInteractive({ useHandCursor: true });
+      t.on('pointerover', () => t.setColor(p.uiAccent));
+      t.on('pointerout', () => t.setColor(color));
+      t.on('pointerdown', () => {
+        cue('ui');
+        this.overlayOpen = false;
+        this.scene.start(`world${w.id}`);
+      });
       overlay.add(t);
+    });
+
+    const close = this.add
+      .text(W / 2, H - 34, '[ back ]', { fontFamily: 'monospace', fontSize: '16px', color: p.uiAccent })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    close.on('pointerdown', () => {
+      cue('ui');
+      overlay.destroy();
+      this.overlayOpen = false;
+    });
+    overlay.add(close);
+  }
+
+  // --- save / load progress -----------------------------------------------------
+
+  private openSaves(): void {
+    this.overlayOpen = true;
+    const p = pal();
+    const overlay = this.add.container(0, 0).setDepth(300);
+    overlay.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.92));
+    overlay.add(
+      this.add
+        .text(W / 2, 56, 'Save / load progress', { fontFamily: 'monospace', fontSize: '24px', color: p.uiAccent })
+        .setOrigin(0.5),
+    );
+    overlay.add(
+      this.add
+        .text(
+          W / 2,
+          98,
+          'Your progress is kept only in this browser. Copy your code or download a\n' +
+            'backup to keep it — then paste or load it back after you clear your browser,\n' +
+            'or to move to another device.',
+          { fontFamily: 'monospace', fontSize: '12px', color: p.uiDim, align: 'center', lineSpacing: 3 },
+        )
+        .setOrigin(0.5),
+    );
+
+    const status = this.add
+      .text(W / 2, 396, '', { fontFamily: 'monospace', fontSize: '13px', color: p.uiAccent, align: 'center' })
+      .setOrigin(0.5);
+    overlay.add(status);
+    const setStatus = (m: string): void => {
+      status.setText(m);
+    };
+
+    const btn = (y: number, label: string, fn: () => void): void => {
+      const t = this.add
+        .text(W / 2, y, label, { fontFamily: 'monospace', fontSize: '16px', color: p.uiText })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      t.on('pointerover', () => t.setColor(p.uiAccent));
+      t.on('pointerout', () => t.setColor(p.uiText));
+      t.on('pointerdown', () => {
+        cue('ui');
+        fn();
+      });
+      overlay.add(t);
+    };
+
+    const reloadAfterImport = (): void => {
+      setStatus('Loaded. Restarting…');
+      this.time.delayedCall(600, () => this.scene.restart());
+    };
+
+    btn(170, '[ copy my progress code ]', () => {
+      const code = exportSaveCode();
+      const clip = navigator.clipboard?.writeText?.(code);
+      if (clip) {
+        clip.then(() => setStatus('Code copied — paste it somewhere safe.')).catch(() => {
+          window.prompt('Copy this progress code:', code);
+        });
+      } else {
+        window.prompt('Copy this progress code:', code);
+      }
+    });
+
+    btn(206, '[ download a backup file ]', () => {
+      try {
+        const blob = new Blob([exportSaveJSON()], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'vox-save.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        setStatus('Backup downloaded as vox-save.json.');
+      } catch {
+        setStatus('Could not download here — use the code instead.');
+      }
+    });
+
+    btn(258, '[ paste a code to load ]', () => {
+      const text = window.prompt('Paste your progress code (or backup) here:');
+      if (text == null) return;
+      if (importSave(text)) reloadAfterImport();
+      else setStatus("That didn't look like a VOX save.");
+    });
+
+    btn(294, '[ load a backup file ]', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json,text/plain';
+      input.onchange = (): void => {
+        const f = input.files && input.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = (): void => {
+          if (importSave(String(r.result))) reloadAfterImport();
+          else setStatus("That file didn't look like a VOX save.");
+        };
+        r.readAsText(f);
+      };
+      input.click();
     });
 
     const close = this.add
