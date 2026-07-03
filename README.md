@@ -22,7 +22,7 @@ lived these experiences.
 - The payoff loop: defeat a tactic in-game and a small skippable card names the real
   Charging The Future tool that answers it in real life.
 
-## Current build — Worlds 1 through 5
+## Current build — Worlds 1 through 6
 
 **World 1 — Specterwave** (public crowding and street harassment):
 
@@ -72,12 +72,22 @@ steady light-flashes (#32), a pet-sensed prowler that sharpens into view as you 
 - The Specterbane boss, "the ache with no cause": tinnitus rings, a bright beam, and
   Striker summons.
 
+**World 6 — Specterrise** (systems and infrastructure sabotage) — opens after World 5 is
+cleared. All seven problems are playable: the Spinner (#20 endless forms) is a buffering
+wall that takes many hits; the MailThief (#23 tampered mail) bolts with your envelope until
+you corner it; the Spammer (#35 strange calls) lobs dodgeable call-bubbles; the RunAround
+(#40 wild goose chase) blinks somewhere new whenever you close in; the Clunker (#42 car
+trouble) backfires forward when you near it; the Vanisher (#43 vanishing items) blinks fully
+out and back, hittable only while present; the Locker (#51 frozen accounts) is a padlock you
+smash to unfreeze. The Specterrise boss, "the system with your name on hold", floods you with
+spam-call fans and jams the works with clunkers.
+
 Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
 costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
 whole playbook with the real-life answer to each tactic. The title screen has a compact
 "play" button plus a **select world** menu; each world unlocks as you clear the one before.
 
-Worlds 6–7 are next, one world at a time.
+World 7 (The Recruiters) is the last one remaining.
 
 ## Safety and accessibility
 
