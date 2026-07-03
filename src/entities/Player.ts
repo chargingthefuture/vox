@@ -4,6 +4,7 @@
 import Phaser from 'phaser';
 import type { ActionInput } from '../systems/input';
 import { cue } from '../systems/sound';
+import { ensureAnims } from '../systems/textures';
 
 export const PLAYER_MAX_HP = 5;
 
@@ -36,14 +37,31 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private chainTimer = 0;
   private invuln = 0;
   private swingCounter = 0;
+  /** How long the hurt pose stays up after a hit, independent of full invulnerability. */
+  private hurtDisplay = 0;
+
+  /** Animation currently driven onto the sprite; lets us restart attacks deliberately. */
+  private animState = '';
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'vox-player');
     scene.add.existing(this);
     scene.physics.add.existing(this);
+    ensureAnims(scene);
     this.setSize(22, 36).setOffset(5, 3);
     this.setCollideWorldBounds(true);
     this.setDepth(10);
+    this.play('vox-idle');
+    this.animState = 'vox-idle';
+  }
+
+  /** Pick and play the animation that matches the current state, without restarting
+   * a looping clip that is already running. Attacks and hurt are handled separately
+   * because they must restart on the exact frame the action begins. */
+  private setAnim(state: string): void {
+    if (this.animState === state) return;
+    this.animState = state;
+    this.play(state, true);
   }
 
   get invulnerable(): boolean {
@@ -71,6 +89,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.coyote = grounded ? COYOTE_MS : Math.max(0, this.coyote - dtMs);
     this.jumpBuffer = Math.max(0, this.jumpBuffer - dtMs);
     this.invuln = Math.max(0, this.invuln - dtMs);
+    this.hurtDisplay = Math.max(0, this.hurtDisplay - dtMs);
     if (this.invuln <= 0) this.setAlpha(1);
 
     // Horizontal movement (attacks lunge; otherwise direct control)
@@ -119,7 +138,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVelocityX(this.facing * lunge);
       // A little squash-and-stretch as swing feedback
       this.setScale(this.comboStep === 3 ? 1.15 : 1.08, 0.95);
+      // Drive the matching attack pose, forcing a restart on every swing.
+      const atk = `vox-atk${this.comboStep}`;
+      this.play(atk, false);
+      this.animState = atk;
     }
+
+    this.updateAnim();
+  }
+
+  /** Resolve which locomotion pose to show. Attacks and hurt own the sprite while
+   * their timers run and are set at the moment they trigger; everything else falls
+   * through to jump / fall / run / idle. */
+  private updateAnim(): void {
+    if (this.attackTimer > 0) return; // attack pose is playing
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    if (this.hurtDisplay > 0) {
+      this.setAnim('vox-hurt');
+      return;
+    }
+    if (!body.blocked.down) {
+      this.setAnim(body.velocity.y < 20 ? 'vox-jump' : 'vox-fall');
+      return;
+    }
+    this.setAnim(Math.abs(body.velocity.x) > 12 ? 'vox-run' : 'vox-idle');
   }
 
   /** Apply damage from a source at sourceX. Returns false if invulnerable. */
@@ -127,9 +169,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.invuln > 0) return false;
     this.hp = Math.max(0, this.hp - 1);
     this.invuln = INVULN_MS;
+    this.hurtDisplay = 360;
     const away = this.x >= sourceX ? 1 : -1;
     this.setVelocity(away * 280, -220);
     this.setAlpha(0.5);
+    // Face the blow and snap to the recoil pose immediately.
+    this.facing = away === 1 ? -1 : 1;
+    this.setFlipX(this.facing === -1);
+    this.play('vox-hurt', true);
+    this.animState = 'vox-hurt';
     cue('hurt');
     return true;
   }
