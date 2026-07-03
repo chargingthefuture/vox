@@ -121,7 +121,7 @@ export class Recorder extends Enemy {
 /** #31 False accusation — points, then lunges. After the lunge it is winded and wide open,
  * because accusations with nothing behind them always are. */
 export class Accuser extends Enemy {
-  private state: 'patrol' | 'telegraph' | 'dash' | 'winded' = 'patrol';
+  private aiState: 'patrol' | 'telegraph' | 'dash' | 'winded' = 'patrol';
   private stateTimer = 0;
   private patrolDir: 1 | -1 = 1;
 
@@ -135,7 +135,7 @@ export class Accuser extends Enemy {
     this.stateTimer -= dtMs;
     const dx = player.x - this.x;
 
-    switch (this.state) {
+    switch (this.aiState) {
       case 'patrol':
         this.setVelocityX(this.patrolDir * 40);
         this.setFlipX(this.patrolDir < 0);
@@ -144,7 +144,7 @@ export class Accuser extends Enemy {
           this.patrolDir = this.patrolDir === 1 ? -1 : 1;
         }
         if (Math.abs(dx) < 260 && Math.abs(player.y - this.y) < 60) {
-          this.state = 'telegraph';
+          this.aiState = 'telegraph';
           this.stateTimer = 480;
           this.setVelocityX(0);
           this.setFlipX(dx < 0);
@@ -154,7 +154,7 @@ export class Accuser extends Enemy {
         break;
       case 'telegraph':
         if (this.stateTimer <= 0) {
-          this.state = 'dash';
+          this.aiState = 'dash';
           this.stateTimer = 480;
           this.setAngle(0);
           this.setVelocityX(Math.sign(dx || 1) * 330);
@@ -162,14 +162,14 @@ export class Accuser extends Enemy {
         break;
       case 'dash':
         if (this.stateTimer <= 0) {
-          this.state = 'winded';
+          this.aiState = 'winded';
           this.stateTimer = 950;
           this.setVelocityX(0);
         }
         break;
       case 'winded':
         // Bent over, catching its breath — free hit window
-        if (this.stateTimer <= 0) this.state = 'patrol';
+        if (this.stateTimer <= 0) this.aiState = 'patrol';
         break;
     }
   }

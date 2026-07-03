@@ -22,20 +22,32 @@ lived these experiences.
 - The payoff loop: defeat a tactic in-game and a small skippable card names the real
   Charging The Future tool that answers it in real life.
 
-## Current build — vertical slice
+## Current build — Worlds 1 and 2
 
-World 1, **Specterwave** (public crowding and street harassment), playable end to end:
+**World 1 — Specterwave** (public crowding and street harassment):
 
 - Four problem-enemies: Crowders (#1 phone crowding), Blockers (#4 path blocking),
   Starers (#13 hostile staring), Mimics (#48 mirroring).
 - The Specterwave boss: crowd-wave pulses, Crowder summons, and a phase-2 swoop.
-  It shrinks with every hit.
-- Beacons (generous checkpoints), win/lose states with no punishment — the boss keeps
-  its damage even if you go down.
-- The world-clear screen lists the whole Specterwave playbook (all 10 of its problems)
-  and what answers each in real life.
 
-Worlds 2–7 are next, one world at a time.
+**World 2 — Spectervox** (slander, reputation, being recorded and baited) — opens after
+World 1 is cleared:
+
+- All five of its problems are playable: Slanderers (#2 workplace turn) fling lie-bubbles;
+  Gatekeepers (#18 unfair denials) are stamping gates; Recorders (#30 recorded baiting)
+  hover and drop loaded questions; Accusers (#31 false accusation) point, lunge, and end
+  up winded; the Clerk (#38 name flinch) rings its bell and a Slanderer comes running.
+- The deflection loop: attack a lie mid-air and it flips into a truth that flies back and
+  hurts whoever threw it. The reputation meter fills as you deflect and defeat; at full,
+  your combo finisher hits harder.
+- The Spectervox boss, "the megaphone that eats voices": lie-bubble fans, Slanderer
+  summons, a phase-2 swoop — and deflected lies hit it twice as hard.
+
+Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
+costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
+whole playbook with the real-life answer to each tactic.
+
+Worlds 3–7 are next, one world at a time.
 
 ## Safety and accessibility
 
