@@ -2,16 +2,14 @@
 // see the real-world tool that answers it. One line, skippable, never a sales pitch.
 
 import Phaser from 'phaser';
-import { BOSS_EVENTS } from '../entities/Boss';
-import { EVENTS } from '../entities/enemies';
 import { getProblem } from '../data/problems';
 import { getWorld } from '../data/worlds';
+import { EVENTS } from '../systems/events';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { virtualPress, virtualRelease } from '../systems/input';
 import { pal } from '../systems/palette';
 import { progress, saveProgress, settings, type BindableAction } from '../systems/settings';
 import { onCaption } from '../systems/sound';
-import { UI_EVENTS } from './GameScene';
 
 const W = 960;
 const H = 540;
@@ -27,6 +25,11 @@ export class UIScene extends Phaser.Scene {
   private clearShown = false;
   /** Armed while a dismissable overlay (card / world clear) is up; gamepad confirm fires it. */
   private overlayDismiss: (() => void) | null = null;
+  private worldLabel!: Phaser.GameObjects.Text;
+  private repBar!: Phaser.GameObjects.Graphics;
+  private repLabel!: Phaser.GameObjects.Text;
+  /** Scene key of the world scene that launched the HUD (stop target on world clear). */
+  private worldSceneKey = 'world1';
 
   constructor() {
     super('ui');
@@ -42,13 +45,18 @@ export class UIScene extends Phaser.Scene {
       .text(16, 12, '', { fontFamily: 'monospace', fontSize: '24px', color: p.uiText })
       .setDepth(100);
 
-    this.add
-      .text(W / 2, 14, 'WORLD 1 — SPECTERWAVE', {
+    this.worldLabel = this.add
+      .text(W / 2, 14, '', {
         fontFamily: 'monospace',
         fontSize: '15px',
         color: p.uiDim,
       })
       .setOrigin(0.5, 0)
+      .setDepth(100);
+
+    this.repBar = this.add.graphics().setDepth(100);
+    this.repLabel = this.add
+      .text(16, 42, '', { fontFamily: 'monospace', fontSize: '11px', color: p.uiDim })
       .setDepth(100);
 
     this.bossBar = this.add.graphics().setDepth(100);
@@ -68,19 +76,39 @@ export class UIScene extends Phaser.Scene {
     if (this.sys.game.device.input.touch) this.buildTouchControls();
 
     const g = this.game.events;
-    g.on(UI_EVENTS.hp, this.onHp, this);
+    g.on(EVENTS.hp, this.onHp, this);
     g.on(EVENTS.problemDefeated, this.onProblemDefeated, this);
-    g.on(BOSS_EVENTS.hp, this.onBossHp, this);
-    g.on(UI_EVENTS.worldClear, this.onWorldClear, this);
-    g.on(UI_EVENTS.respawn, this.onRespawn, this);
+    g.on(EVENTS.bossHp, this.onBossHp, this);
+    g.on(EVENTS.worldClear, this.onWorldClear, this);
+    g.on(EVENTS.respawn, this.onRespawn, this);
+    g.on(EVENTS.worldInfo, this.onWorldInfo, this);
+    g.on(EVENTS.reputation, this.onReputation, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       onCaption(() => undefined);
-      g.off(UI_EVENTS.hp, this.onHp, this);
+      g.off(EVENTS.hp, this.onHp, this);
       g.off(EVENTS.problemDefeated, this.onProblemDefeated, this);
-      g.off(BOSS_EVENTS.hp, this.onBossHp, this);
-      g.off(UI_EVENTS.worldClear, this.onWorldClear, this);
-      g.off(UI_EVENTS.respawn, this.onRespawn, this);
+      g.off(EVENTS.bossHp, this.onBossHp, this);
+      g.off(EVENTS.worldClear, this.onWorldClear, this);
+      g.off(EVENTS.respawn, this.onRespawn, this);
+      g.off(EVENTS.worldInfo, this.onWorldInfo, this);
+      g.off(EVENTS.reputation, this.onReputation, this);
     });
+  }
+
+  private onWorldInfo(_worldId: number, name: string, sceneKey: string): void {
+    this.worldLabel.setText(name);
+    this.worldSceneKey = sceneKey;
+  }
+
+  private onReputation(value: number): void {
+    const p = pal();
+    this.repBar.clear();
+    const w = 120;
+    this.repLabel.setText('reputation');
+    this.repBar.fillStyle(p.uiCard, 0.9).fillRoundedRect(16, 56, w, 8, 3);
+    this.repBar
+      .fillStyle(Phaser.Display.Color.HexStringToColor(p.uiAccent).color, 1)
+      .fillRoundedRect(17, 57, Math.max(3, (w - 2) * (value / 100)), 6, 2);
   }
 
   // On-screen buttons for phones/tablets: move on the left, jump + attack on the right.
@@ -141,9 +169,9 @@ export class UIScene extends Phaser.Scene {
     this.showCaption('Knocked down, not out.');
   }
 
-  private onBossHp(hp: number, max: number): void {
+  private onBossHp(hp: number, max: number, name: string, tagline: string): void {
     const p = pal();
-    this.bossLabel.setVisible(hp > 0).setText('SPECTERWAVE — the wave that thinks it is the ocean');
+    this.bossLabel.setVisible(hp > 0).setText(`${name} — ${tagline}`);
     this.bossBar.clear();
     if (hp <= 0) return;
     const w = 420;
@@ -308,9 +336,11 @@ export class UIScene extends Phaser.Scene {
     col(lines.slice(0, half), 60);
     col(lines.slice(half), 500);
 
+    const nextUp =
+      worldId === 1 ? 'World 2: Spectervox is now open' : 'Worlds 3–7 are on their way';
     overlay.add(
       this.add
-        .text(W / 2, H - 44, 'press any key or tap — Worlds 2–7 are on their way', {
+        .text(W / 2, H - 44, `press any key or tap — ${nextUp}`, {
           fontFamily: 'monospace',
           fontSize: '14px',
           color: p.uiDim,
@@ -327,7 +357,7 @@ export class UIScene extends Phaser.Scene {
         if (used) return;
         used = true;
         this.overlayDismiss = null;
-        this.scene.stop('game');
+        this.scene.stop(this.worldSceneKey);
         this.scene.start('title');
         this.scene.stop();
       };

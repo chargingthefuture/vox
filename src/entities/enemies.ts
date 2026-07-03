@@ -2,14 +2,10 @@
 // and exists to be flattened. The tactic is always the enemy; VOX is never the victim.
 
 import Phaser from 'phaser';
+import { EVENTS } from '../systems/events';
 import { pal } from '../systems/palette';
 import { cue } from '../systems/sound';
 import type { Player } from './Player';
-
-export const EVENTS = {
-  problemDefeated: 'vox:problem-defeated',
-  playerHit: 'vox:player-hit-request',
-} as const;
 
 export abstract class Enemy extends Phaser.Physics.Arcade.Sprite {
   hp: number;

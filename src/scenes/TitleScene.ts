@@ -60,11 +60,23 @@ export class TitleScene extends Phaser.Scene {
     // The hero, present and unbothered
     this.add.image(W / 2, H - 60, 'vox-player').setScale(2);
 
-    const cleared = progress.worldsCleared.includes(1);
-    const menu: { label: () => string; action: () => void }[] = [
+    const cleared1 = progress.worldsCleared.includes(1);
+    const cleared2 = progress.worldsCleared.includes(2);
+    const world2Open = cleared1;
+    const menu: { label: () => string; action: () => void; locked?: boolean }[] = [
       {
-        label: () => `▶ ${cleared ? 'replay' : 'start'} — World 1: Specterwave${cleared ? '  ✓ cleared' : ''}`,
-        action: () => this.startGame(),
+        label: () => `▶ World 1: Specterwave${cleared1 ? '  ✓ cleared' : ''}`,
+        action: () => this.startGame(1),
+      },
+      {
+        label: () =>
+          world2Open
+            ? `▶ World 2: Spectervox${cleared2 ? '  ✓ cleared' : ''}`
+            : 'World 2: Spectervox — clear World 1 to open',
+        action: () => {
+          if (world2Open) this.startGame(2);
+        },
+        locked: !world2Open,
       },
       {
         label: () => `calm mode: ${settings.calmMode ? 'ON' : 'off'}   (soft colors, muted, no shakes)`,
@@ -102,21 +114,26 @@ export class TitleScene extends Phaser.Scene {
     ];
 
     menu.forEach((item, i) => {
+      const isWorldRow = i <= 1;
+      const baseColor = item.locked ? p.uiDim : isWorldRow ? p.uiText : p.uiDim;
       const t = this.add
-        .text(W / 2, 252 + i * 30, item.label(), {
+        .text(W / 2, 248 + i * 29, item.label(), {
           fontFamily: 'monospace',
-          fontSize: i === 0 ? '18px' : '14px',
-          color: i === 0 ? p.uiText : p.uiDim,
+          fontSize: isWorldRow ? '17px' : '14px',
+          color: baseColor,
         })
         .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
-      t.on('pointerover', () => t.setColor(p.uiAccent));
-      t.on('pointerout', () => t.setColor(i === 0 ? p.uiText : p.uiDim));
-      t.on('pointerdown', () => {
-        if (this.overlayOpen) return;
-        cue('ui');
-        item.action();
-      });
+        .setAlpha(item.locked ? 0.6 : 1);
+      if (!item.locked) {
+        t.setInteractive({ useHandCursor: true });
+        t.on('pointerover', () => t.setColor(p.uiAccent));
+        t.on('pointerout', () => t.setColor(baseColor));
+        t.on('pointerdown', () => {
+          if (this.overlayOpen) return;
+          cue('ui');
+          item.action();
+        });
+      }
     });
 
     this.input.keyboard?.on('keydown-ENTER', () => {
@@ -126,9 +143,12 @@ export class TitleScene extends Phaser.Scene {
     if (!settings.contentNoteSeen) this.showContentNote();
   }
 
-  private startGame(): void {
+  /** Start a world; with no argument, the furthest open uncleared world. */
+  private startGame(worldId?: number): void {
     if (this.overlayOpen) return;
-    this.scene.start('game');
+    const target =
+      worldId ?? (progress.worldsCleared.includes(1) && !progress.worldsCleared.includes(2) ? 2 : 1);
+    this.scene.start(`world${target}`);
   }
 
   // --- first-launch content note ------------------------------------------------
