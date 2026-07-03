@@ -26,6 +26,9 @@ export interface AttackBox {
 export class Player extends Phaser.Physics.Arcade.Sprite {
   hp = PLAYER_MAX_HP;
   facing: 1 | -1 = 1;
+  /** Movement multiplier for slow-fields (e.g. the World 4 noise emitter). Reset each frame
+   * by the scene; hazards lower it while you are inside them. */
+  slowFactor = 1;
   private coyote = 0;
   private jumpBuffer = 0;
   private comboStep = 0; // 0 = idle, 1..3 = current swing
@@ -76,7 +79,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       let vx = 0;
       if (input.isDown('left')) vx -= MOVE_SPEED;
       if (input.isDown('right')) vx += MOVE_SPEED;
-      this.setVelocityX(vx);
+      this.setVelocityX(vx * this.slowFactor);
       if (vx !== 0) {
         this.facing = vx > 0 ? 1 : -1;
         this.setFlipX(this.facing === -1);

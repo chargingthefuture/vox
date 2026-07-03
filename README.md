@@ -22,7 +22,7 @@ lived these experiences.
 - The payoff loop: defeat a tactic in-game and a small skippable card names the real
   Charging The Future tool that answers it in real life.
 
-## Current build — Worlds 1, 2, and 3
+## Current build — Worlds 1 through 4
 
 **World 1 — Specterwave** (public crowding and street harassment):
 
@@ -52,12 +52,21 @@ World 1 is cleared:
 - The Specterforce boss, "the badge that answers to no one": compliance shockwaves that
   roll both ways along the ground, circling-Siren summons, and a phase-2 charge.
 
+**World 4 — Specterrealm** (the surveilled neighborhood) — opens after World 3 is cleared.
+The biggest world: all twelve of its problems are represented as the props and people of a
+watched street — parked-car watchers (#3), fake new-neighbors (#5), fresh antennas (#6),
+tracking drones (#7), peeking neighbors (#10), a revolving door with an endless parade
+(#11), strange window-lights (#12), a humming emitter that slows you until smashed (#22),
+steady light-flashes (#32), a pet-sensed prowler that sharpens into view as you near it
+(#36), doorstep lurkers (#46), and a commanded bark-speaker (#50). The Specterrealm boss,
+"the block that watches back", sweeps surveillance pulses and launches drones.
+
 Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
 costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
 whole playbook with the real-life answer to each tactic. The title screen unlocks each
 world as you clear the one before it.
 
-Worlds 4–7 are next, one world at a time.
+Worlds 5–7 are next, one world at a time.
 
 ## Safety and accessibility
 

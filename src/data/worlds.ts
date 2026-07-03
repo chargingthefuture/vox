@@ -47,7 +47,7 @@ export const WORLDS: World[] = [
     meaning: 'a domain ruled by fear and intimidation',
     theme: 'The surveilled neighborhood',
     problemIds: [3, 5, 6, 7, 10, 11, 12, 22, 32, 36, 46, 50],
-    implemented: [],
+    implemented: [3, 5, 6, 7, 10, 11, 12, 22, 32, 36, 46, 50],
   },
   {
     id: 5,

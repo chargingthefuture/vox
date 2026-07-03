@@ -280,7 +280,10 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
       return;
     }
 
+    // Player moves using the slow-factor that hazards set last frame; then reset it so this
+    // frame's enemy updates (e.g. the noise emitter) can lower it again for next frame.
     this.player.updatePlayer(delta, this.inputMap);
+    this.player.slowFactor = 1;
 
     for (const e of this.enemies) {
       if (e.active && !e.defeated) e.updateEnemy(delta, this.player);
