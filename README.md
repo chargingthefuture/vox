@@ -94,7 +94,7 @@ lures. Beat it and the whole network is done.
 
 Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
 costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
-whole playbook with the real-life answer to each tactic. The title screen has a compact
+whole runbook with the real-life answer to each tactic. The title screen has a compact
 "play" button plus a **select world** menu; each world unlocks as you clear the one before.
 
 **All 51 problems the app lists are now represented across the seven worlds.** Clear every
