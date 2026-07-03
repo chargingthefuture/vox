@@ -44,6 +44,13 @@ const KEYS = [
   'vox-door',
   'vox-bark',
   'vox-boss4',
+  'vox-ringer',
+  'vox-ringwave',
+  'vox-doctor',
+  'vox-drainer',
+  'vox-beamer',
+  'vox-striker',
+  'vox-boss5',
 ] as const;
 
 let generatedFor: 'normal' | 'calm' | null = null;
@@ -495,6 +502,87 @@ export function ensureTextures(scene: Phaser.Scene): void {
     g.fillCircle(48, 44, 6); // a red pupil, always watching
     g.fillStyle(p.bossAccent, 1);
     g.fillRect(40, 70, 16, 4);
+  });
+
+  // --- World 5: Specterbane ---
+
+  // Ringer (#8) — a tuning-fork-ish emitter.
+  gen('vox-ringer', 32, 40, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(14, 20, 4, 20); // stem
+    g.lineStyle(4, p.enemy, 1);
+    g.lineBetween(16, 22, 8, 4);
+    g.lineBetween(16, 22, 24, 4); // fork tines
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(16, 22, 3);
+  });
+
+  // Ring-wave (#8 projectile) — a hollow ring rolling out.
+  gen('vox-ringwave', 34, 34, () => {
+    g.lineStyle(5, p.projectile, 0.85);
+    g.strokeCircle(17, 17, 13);
+  });
+
+  // False doctor (#21) — a coat with a clipboard, half-there.
+  gen('vox-doctor', 30, 40, () => {
+    g.fillStyle(p.playerAccent, 0.85);
+    g.fillRoundedRect(4, 10, 22, 28, 5); // white coat
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(15, 8, 6);
+    g.fillStyle(p.enemy, 1);
+    g.fillRect(18, 20, 8, 10); // clipboard
+    g.fillStyle(p.hurt, 0.8);
+    g.fillRect(12, 22, 6, 2); // a stethoscope hint
+  });
+
+  // Drainer (#24) — a heavy, sagging weight.
+  gen('vox-drainer', 32, 32, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillCircle(16, 16, 13);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillEllipse(16, 22, 18, 8); // sagging drip
+    g.fillStyle(p.bossAccent, 0.9);
+    g.fillCircle(11, 13, 2);
+    g.fillCircle(21, 13, 2); // tired eyes
+  });
+
+  // Beamer (#28) — a spotlight head.
+  gen('vox-beamer', 32, 26, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(4, 6, 18, 14, 4); // housing
+    g.fillStyle(p.projectile, 0.95);
+    g.fillCircle(22, 13, 7); // the lamp
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillCircle(22, 13, 3);
+  });
+
+  // Striker (#45) — a coiled fist.
+  gen('vox-striker', 32, 36, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(6, 8, 20, 24, 8);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(20, 14, 10, 8); // knuckles jabbing out
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(13, 16, 2);
+    g.fillCircle(19, 16, 2);
+  });
+
+  // Specterbane — the boss. A skull-ish ghost wreathed in beams.
+  gen('vox-boss5', 96, 112, () => {
+    g.fillStyle(p.boss, 1);
+    g.fillEllipse(48, 46, 86, 82);
+    g.fillTriangle(8, 76, 26, 76, 17, 104);
+    g.fillTriangle(30, 80, 48, 80, 39, 108);
+    g.fillTriangle(52, 80, 70, 80, 61, 108);
+    g.fillTriangle(72, 76, 90, 76, 81, 104);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(34, 42, 11);
+    g.fillCircle(62, 42, 11); // hollow sockets
+    g.fillStyle(p.projectile, 0.9);
+    g.fillCircle(34, 42, 4);
+    g.fillCircle(62, 42, 4); // burning points
+    g.fillStyle(p.bossAccent, 1);
+    for (let i = 0; i < 5; i++) g.fillRect(34 + i * 7, 66, 3, 10); // gritted teeth
   });
 
   g.destroy();

@@ -64,24 +64,21 @@ export class TitleScene extends Phaser.Scene {
     type Row = { label: () => string; action: () => void; locked?: boolean; world?: boolean };
     const menu: Row[] = [];
 
-    // A row per built-out world; each opens once the previous world is cleared.
-    const playable = WORLDS.filter((w) => w.implemented.length > 0);
-    for (const w of playable) {
-      const cleared = progress.worldsCleared.includes(w.id);
-      const open = w.id === 1 || progress.worldsCleared.includes(w.id - 1);
-      const shortName = w.name.replace(/^The /, '');
-      menu.push({
-        world: true,
-        locked: !open,
-        label: () =>
-          open
-            ? `▶ World ${w.id}: ${shortName}${cleared ? '  ✓ cleared' : ''}`
-            : `World ${w.id}: ${shortName} — clear World ${w.id - 1} to open`,
-        action: () => {
-          if (open) this.startGame(w.id);
-        },
-      });
-    }
+    // A single "play" row targets the furthest open-but-uncleared world (else World 1);
+    // the full list lives behind "select world…" so the menu stays short as worlds grow.
+    const nextWorld = this.nextOpenWorld();
+    const nextShort = nextWorld.name.replace(/^The /, '');
+    const nextCleared = progress.worldsCleared.includes(nextWorld.id);
+    menu.push({
+      world: true,
+      label: () => `▶ ${nextCleared ? 'replay' : 'play'} — World ${nextWorld.id}: ${nextShort}`,
+      action: () => this.startGame(nextWorld.id),
+    });
+    menu.push({
+      world: true,
+      label: () => 'select world…',
+      action: () => this.openWorldSelect(),
+    });
 
     menu.push(
       {
@@ -151,18 +148,86 @@ export class TitleScene extends Phaser.Scene {
     if (!settings.contentNoteSeen) this.showContentNote();
   }
 
-  /** Start a world; with no argument, the lowest open-but-uncleared world (else World 1). */
+  /** True when a world is open to play (World 1 always; others need the prior world cleared). */
+  private worldOpen(id: number): boolean {
+    return id === 1 || progress.worldsCleared.includes(id - 1);
+  }
+
+  /** The lowest open-but-uncleared playable world, or World 1 if all cleared / none. */
+  private nextOpenWorld() {
+    const playable = WORLDS.filter((w) => w.implemented.length > 0);
+    return (
+      playable.find((w) => this.worldOpen(w.id) && !progress.worldsCleared.includes(w.id)) ?? playable[0]
+    );
+  }
+
+  /** Start a world; with no argument, the furthest open world. */
   private startGame(worldId?: number): void {
     if (this.overlayOpen) return;
-    let target = worldId;
-    if (target === undefined) {
-      const playable = WORLDS.filter((w) => w.implemented.length > 0);
-      const next = playable.find(
-        (w) => (w.id === 1 || progress.worldsCleared.includes(w.id - 1)) && !progress.worldsCleared.includes(w.id),
-      );
-      target = next?.id ?? 1;
-    }
+    const target = worldId ?? this.nextOpenWorld().id;
     this.scene.start(`world${target}`);
+  }
+
+  // --- world select -------------------------------------------------------------
+
+  private openWorldSelect(): void {
+    this.overlayOpen = true;
+    const p = pal();
+    const playable = WORLDS.filter((w) => w.implemented.length > 0);
+    const overlay = this.add.container(0, 0).setDepth(300);
+    overlay.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.86));
+    overlay.add(
+      this.add
+        .text(W / 2, 60, 'Select a world', { fontFamily: 'monospace', fontSize: '24px', color: p.uiAccent })
+        .setOrigin(0.5),
+    );
+    overlay.add(
+      this.add
+        .text(W / 2, 92, 'each opens once you clear the one before it', {
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          color: p.uiDim,
+        })
+        .setOrigin(0.5),
+    );
+
+    const top = 132;
+    const gap = Math.min(34, (H - 190) / playable.length);
+    playable.forEach((w, i) => {
+      const open = this.worldOpen(w.id);
+      const cleared = progress.worldsCleared.includes(w.id);
+      const shortName = w.name.replace(/^The /, '');
+      const label = open
+        ? `World ${w.id}: ${shortName}${cleared ? '  ✓' : ''}`
+        : `World ${w.id}: ${shortName} — locked`;
+      const color = open ? p.uiText : p.uiDim;
+      const t = this.add
+        .text(W / 2, top + i * gap, label, { fontFamily: 'monospace', fontSize: '16px', color })
+        .setOrigin(0.5)
+        .setAlpha(open ? 1 : 0.55);
+      if (open) {
+        t.setInteractive({ useHandCursor: true });
+        t.on('pointerover', () => t.setColor(p.uiAccent));
+        t.on('pointerout', () => t.setColor(color));
+        t.on('pointerdown', () => {
+          cue('ui');
+          this.overlayOpen = false;
+          this.scene.start(`world${w.id}`);
+        });
+      }
+      overlay.add(t);
+    });
+
+    const close = this.add
+      .text(W / 2, H - 34, '[ back ]', { fontFamily: 'monospace', fontSize: '16px', color: p.uiAccent })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    close.on('pointerdown', () => {
+      cue('ui');
+      overlay.destroy();
+      this.overlayOpen = false;
+    });
+    overlay.add(close);
   }
 
   // --- first-launch content note ------------------------------------------------

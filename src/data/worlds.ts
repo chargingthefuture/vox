@@ -55,7 +55,7 @@ export const WORLDS: World[] = [
     meaning: 'a destructive force that seeks to eliminate individuality and freedom',
     theme: 'Attacks on body and mind',
     problemIds: [8, 21, 24, 28, 45],
-    implemented: [],
+    implemented: [8, 21, 24, 28, 45],
   },
   {
     id: 6,

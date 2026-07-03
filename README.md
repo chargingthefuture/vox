@@ -22,7 +22,7 @@ lived these experiences.
 - The payoff loop: defeat a tactic in-game and a small skippable card names the real
   Charging The Future tool that answers it in real life.
 
-## Current build — Worlds 1 through 4
+## Current build — Worlds 1 through 5
 
 **World 1 — Specterwave** (public crowding and street harassment):
 
@@ -61,12 +61,23 @@ steady light-flashes (#32), a pet-sensed prowler that sharpens into view as you 
 (#36), doorstep lurkers (#46), and a commanded bark-speaker (#50). The Specterrealm boss,
 "the block that watches back", sweeps surveillance pulses and launches drones.
 
+**World 5 — Specterbane** (attacks on body and mind) — opens after World 4 is cleared:
+
+- All five of its problems are playable: the Ringer (#8 tinnitus) rolls dodgeable
+  ring-pulses you jump; the FalseDoctor (#21 denied care) phases solid ↔ transparent and can
+  only be hit while solid — it ghosts you; the Drainer (#24 fatigue) trails you and drags
+  you slow until smashed; the Beamer (#28 bright beams / DEWs) fires a telegraphed steady
+  beam (never a strobe); the Striker (#45 unexplained injuries) pounces and is wide open
+  after it overreaches.
+- The Specterbane boss, "the ache with no cause": tinnitus rings, a bright beam, and
+  Striker summons.
+
 Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
 costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
-whole playbook with the real-life answer to each tactic. The title screen unlocks each
-world as you clear the one before it.
+whole playbook with the real-life answer to each tactic. The title screen has a compact
+"play" button plus a **select world** menu; each world unlocks as you clear the one before.
 
-Worlds 5–7 are next, one world at a time.
+Worlds 6–7 are next, one world at a time.
 
 ## Safety and accessibility
 
