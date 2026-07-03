@@ -3,6 +3,7 @@ import { TitleScene } from './scenes/TitleScene';
 import { UIScene } from './scenes/UIScene';
 import { World1Scene } from './scenes/world/World1Scene';
 import { World2Scene } from './scenes/world/World2Scene';
+import { World3Scene } from './scenes/world/World3Scene';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -19,5 +20,5 @@ new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [TitleScene, World1Scene, World2Scene, UIScene],
+  scene: [TitleScene, World1Scene, World2Scene, World3Scene, UIScene],
 });

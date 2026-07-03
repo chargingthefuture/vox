@@ -2,6 +2,7 @@
 // and the first-launch content note.
 
 import Phaser from 'phaser';
+import { WORLDS } from '../data/worlds';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { pal } from '../systems/palette';
 import {
@@ -60,24 +61,29 @@ export class TitleScene extends Phaser.Scene {
     // The hero, present and unbothered
     this.add.image(W / 2, H - 60, 'vox-player').setScale(2);
 
-    const cleared1 = progress.worldsCleared.includes(1);
-    const cleared2 = progress.worldsCleared.includes(2);
-    const world2Open = cleared1;
-    const menu: { label: () => string; action: () => void; locked?: boolean }[] = [
-      {
-        label: () => `▶ World 1: Specterwave${cleared1 ? '  ✓ cleared' : ''}`,
-        action: () => this.startGame(1),
-      },
-      {
+    type Row = { label: () => string; action: () => void; locked?: boolean; world?: boolean };
+    const menu: Row[] = [];
+
+    // A row per built-out world; each opens once the previous world is cleared.
+    const playable = WORLDS.filter((w) => w.implemented.length > 0);
+    for (const w of playable) {
+      const cleared = progress.worldsCleared.includes(w.id);
+      const open = w.id === 1 || progress.worldsCleared.includes(w.id - 1);
+      const shortName = w.name.replace(/^The /, '');
+      menu.push({
+        world: true,
+        locked: !open,
         label: () =>
-          world2Open
-            ? `▶ World 2: Spectervox${cleared2 ? '  ✓ cleared' : ''}`
-            : 'World 2: Spectervox — clear World 1 to open',
+          open
+            ? `▶ World ${w.id}: ${shortName}${cleared ? '  ✓ cleared' : ''}`
+            : `World ${w.id}: ${shortName} — clear World ${w.id - 1} to open`,
         action: () => {
-          if (world2Open) this.startGame(2);
+          if (open) this.startGame(w.id);
         },
-        locked: !world2Open,
-      },
+      });
+    }
+
+    menu.push(
       {
         label: () => `calm mode: ${settings.calmMode ? 'ON' : 'off'}   (soft colors, muted, no shakes)`,
         action: () => {
@@ -111,15 +117,17 @@ export class TitleScene extends Phaser.Scene {
         },
       },
       { label: () => 'controls…', action: () => this.openControls() },
-    ];
+    );
 
+    // Fit the rows between the intro text (~220) and VOX at the bottom; tighten as worlds grow.
+    const rowGap = menu.length > 8 ? 25 : 29;
+    const top = 244;
     menu.forEach((item, i) => {
-      const isWorldRow = i <= 1;
-      const baseColor = item.locked ? p.uiDim : isWorldRow ? p.uiText : p.uiDim;
+      const baseColor = item.locked ? p.uiDim : item.world ? p.uiText : p.uiDim;
       const t = this.add
-        .text(W / 2, 248 + i * 29, item.label(), {
+        .text(W / 2, top + i * rowGap, item.label(), {
           fontFamily: 'monospace',
-          fontSize: isWorldRow ? '17px' : '14px',
+          fontSize: item.world ? '17px' : '14px',
           color: baseColor,
         })
         .setOrigin(0.5)
@@ -143,11 +151,17 @@ export class TitleScene extends Phaser.Scene {
     if (!settings.contentNoteSeen) this.showContentNote();
   }
 
-  /** Start a world; with no argument, the furthest open uncleared world. */
+  /** Start a world; with no argument, the lowest open-but-uncleared world (else World 1). */
   private startGame(worldId?: number): void {
     if (this.overlayOpen) return;
-    const target =
-      worldId ?? (progress.worldsCleared.includes(1) && !progress.worldsCleared.includes(2) ? 2 : 1);
+    let target = worldId;
+    if (target === undefined) {
+      const playable = WORLDS.filter((w) => w.implemented.length > 0);
+      const next = playable.find(
+        (w) => (w.id === 1 || progress.worldsCleared.includes(w.id - 1)) && !progress.worldsCleared.includes(w.id),
+      );
+      target = next?.id ?? 1;
+    }
     this.scene.start(`world${target}`);
   }
 

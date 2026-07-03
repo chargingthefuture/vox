@@ -39,7 +39,7 @@ export const WORLDS: World[] = [
     meaning: 'a powerful unseen entity that enforces compliance',
     theme: 'Authority and enforcement',
     problemIds: [9, 39, 41, 47],
-    implemented: [],
+    implemented: [9, 39, 41, 47],
   },
   {
     id: 4,

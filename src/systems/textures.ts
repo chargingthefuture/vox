@@ -26,6 +26,12 @@ const KEYS = [
   'vox-boss2',
   'vox-bubble',
   'vox-bubble-truth',
+  'vox-shadow',
+  'vox-detector',
+  'vox-loopgen',
+  'vox-siren',
+  'vox-boss3',
+  'vox-holdwave',
 ] as const;
 
 let generatedFor: 'normal' | 'calm' | null = null;
@@ -251,6 +257,87 @@ export function ensureTextures(scene: Phaser.Scene): void {
     g.lineStyle(2.5, p.uiCard, 0.9);
     g.lineBetween(8, 10, 12, 14);
     g.lineBetween(12, 14, 21, 6); // a check mark
+  });
+
+  // --- World 3: Specterforce ---
+
+  // Shadow (#9) — a cap-and-shades cop, all watchfulness.
+  gen('vox-shadow', 32, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(4, 8, 24, 30, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(4, 4, 24, 8); // cap
+    g.fillRect(2, 10, 28, 3); // brim
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillRect(8, 15, 16, 5); // mirrored shades
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(16, 27, 2.5); // badge
+  });
+
+  // Detector (#39) — a store security archway.
+  gen('vox-detector', 48, 64, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRect(4, 4, 8, 58); // left post
+    g.fillRect(36, 4, 8, 58); // right post
+    g.fillRect(4, 4, 40, 8); // top bar
+    g.fillStyle(p.projectile, 0.85);
+    g.fillCircle(24, 20, 4); // the little beeper light
+  });
+
+  // Loop generator (#41) — a spinning "on hold" ring.
+  gen('vox-loopgen', 48, 48, () => {
+    g.lineStyle(6, p.enemy, 1);
+    g.strokeCircle(24, 24, 18);
+    g.lineStyle(6, p.enemyAccent, 1);
+    g.beginPath();
+    g.arc(24, 24, 18, 0, Math.PI * 1.2);
+    g.strokePath();
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(24, 24, 5); // the hold button, endlessly lit
+  });
+
+  // Siren (#47) — a light bar on wheels.
+  gen('vox-siren', 32, 24, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(2, 10, 28, 10, 3); // body
+    g.fillStyle(p.hurt, 1);
+    g.fillRoundedRect(6, 4, 8, 6, 2); // red light
+    g.fillStyle(p.player, 1);
+    g.fillRoundedRect(18, 4, 8, 6, 2); // blue light
+    g.fillStyle(p.uiCard, 1);
+    g.fillCircle(9, 21, 3);
+    g.fillCircle(23, 21, 3); // wheels
+  });
+
+  // Specterforce — the boss. A riot-shield ghost with a badge.
+  gen('vox-boss3', 96, 112, () => {
+    g.fillStyle(p.boss, 1);
+    g.fillEllipse(48, 46, 86, 82);
+    g.fillTriangle(8, 76, 26, 76, 17, 104);
+    g.fillTriangle(30, 80, 48, 80, 39, 108);
+    g.fillTriangle(52, 80, 70, 80, 61, 108);
+    g.fillTriangle(72, 76, 90, 76, 81, 104);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillRect(24, 6, 48, 10); // cap brim across the top
+    g.fillStyle(p.playerAccent, 1);
+    g.fillCircle(34, 40, 8);
+    g.fillCircle(62, 40, 8);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(34, 41, 3.5);
+    g.fillCircle(62, 41, 3.5);
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(48, 62, 6); // a big shiny badge
+    g.fillStyle(p.bossAccent, 1);
+    g.fillRect(40, 74, 16, 4); // stern line of a mouth
+  });
+
+  // The compliance shockwave / hold-wave share the wave sprite already, but the hold-wave
+  // reads as a "please hold" ripple, tinted with the dim UI color.
+  gen('vox-holdwave', 44, 22, () => {
+    g.fillStyle(p.checkpoint, 0.9);
+    g.fillRoundedRect(0, 4, 44, 16, 8);
+    g.fillStyle(p.projectile, 0.7);
+    g.fillRoundedRect(6, 9, 32, 8, 4);
   });
 
   g.destroy();

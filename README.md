@@ -22,7 +22,7 @@ lived these experiences.
 - The payoff loop: defeat a tactic in-game and a small skippable card names the real
   Charging The Future tool that answers it in real life.
 
-## Current build — Worlds 1 and 2
+## Current build — Worlds 1, 2, and 3
 
 **World 1 — Specterwave** (public crowding and street harassment):
 
@@ -43,11 +43,21 @@ World 1 is cleared:
 - The Spectervox boss, "the megaphone that eats voices": lie-bubble fans, Slanderer
   summons, a phase-2 swoop — and deflected lies hit it twice as hard.
 
+**World 3 — Specterforce** (authority and enforcement) — opens after World 2 is cleared:
+
+- All four of its problems are playable: Shadows (#9 police shadowing) tail you once they
+  clock you; the Detector (#39 doorway beeps) pings and calls a Shadow over; the
+  LoopGenerator (#41 customer-service hold-loop) puts you on hold, shoving you back until
+  you smash it; Sirens (#47 siren circles) ride fixed loops around their posts.
+- The Specterforce boss, "the badge that answers to no one": compliance shockwaves that
+  roll both ways along the ground, circling-Siren summons, and a phase-2 charge.
+
 Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
 costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
-whole playbook with the real-life answer to each tactic.
+whole playbook with the real-life answer to each tactic. The title screen unlocks each
+world as you clear the one before it.
 
-Worlds 3–7 are next, one world at a time.
+Worlds 4–7 are next, one world at a time.
 
 ## Safety and accessibility
 
