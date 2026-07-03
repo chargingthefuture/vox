@@ -24,6 +24,10 @@ export interface Palette {
   uiCard: number;
   uiAccent: string;
   hurt: number;
+  /** Confident cartoon outline color. Used to ink every sprite. */
+  ink: number;
+  /** A soft light used for rim/shine accents that survive the calm recolor. */
+  shine: number;
 }
 
 const NORMAL: Palette = {
@@ -46,6 +50,8 @@ const NORMAL: Palette = {
   uiCard: 0x1c1c34,
   uiAccent: '#7ce38b',
   hurt: 0xff6b6b,
+  ink: 0x0c0c1a,
+  shine: 0xffffff,
 };
 
 const CALM: Palette = {
@@ -68,6 +74,9 @@ const CALM: Palette = {
   uiCard: 0x333a4a,
   uiAccent: '#9dc4a4',
   hurt: 0xc98a8a,
+  // Calm mode keeps outlines soft and low-contrast — a muted slate, never harsh black.
+  ink: 0x2a3040,
+  shine: 0xf0f2f6,
 };
 
 export function pal(): Palette {

@@ -7,7 +7,18 @@ import { pal } from './palette';
 import { settings } from './settings';
 
 const KEYS = [
-  'vox-player',
+  'vox-player', // idle frame 0 (also the default static key)
+  'vox-player-idle1',
+  'vox-player-run0',
+  'vox-player-run1',
+  'vox-player-run2',
+  'vox-player-run3',
+  'vox-player-jump',
+  'vox-player-fall',
+  'vox-player-atk1',
+  'vox-player-atk2',
+  'vox-player-atk3',
+  'vox-player-hurt',
   'vox-crowder',
   'vox-blocker',
   'vox-starer',
@@ -91,104 +102,349 @@ export function ensureTextures(scene: Phaser.Scene): void {
     g.generateTexture(key, w, h);
   };
 
-  // VOX — the hero. Teal, upright, visor bright.
-  gen('vox-player', 32, 40, () => {
-    g.fillStyle(p.player, 1);
-    g.fillRoundedRect(4, 4, 24, 34, 7);
-    g.fillStyle(p.playerAccent, 1);
-    g.fillRect(8, 11, 18, 5); // visor — always looking forward
-    g.fillRect(6, 32, 8, 4); // boot
-    g.fillRect(18, 32, 8, 4);
-  });
+  // --- hand-inked cartoon helpers ------------------------------------------------
+  // Everything is drawn as bold flat shapes with a confident dark outline, so the
+  // silhouettes read on their own (colorblind-safe) and survive the calm recolor.
+  const INK = 1.6; // base line weight; ~1.5x on screen at the game's zoom
 
-  // Crowder (#1) — shuffles into your space, phone out.
+  const fillRR = (x: number, y: number, w: number, h: number, r: number, color: number, a = 1) => {
+    g.fillStyle(color, a);
+    g.fillRoundedRect(x, y, w, h, r);
+  };
+  const inkRR = (x: number, y: number, w: number, h: number, r: number, lw = INK) => {
+    g.lineStyle(lw, p.ink, 1);
+    g.strokeRoundedRect(x, y, w, h, r);
+  };
+  // A filled+inked rounded rect in one call.
+  const rr = (x: number, y: number, w: number, h: number, r: number, color: number, lw = INK) => {
+    fillRR(x, y, w, h, r, color);
+    inkRR(x, y, w, h, r, lw);
+  };
+  const fillC = (x: number, y: number, r: number, color: number, a = 1) => {
+    g.fillStyle(color, a);
+    g.fillCircle(x, y, r);
+  };
+  const circ = (x: number, y: number, r: number, color: number, lw = INK) => {
+    fillC(x, y, r, color);
+    g.lineStyle(lw, p.ink, 1);
+    g.strokeCircle(x, y, r);
+  };
+
+  // VOX — the hero. A cool, unbothered survivor: teal body, a bright forward visor
+  // (the reclaimed "voice"), and a small energy chevron on the chest. Drawn facing
+  // right; the scene flips X for facing. All frames share this 32x40 footprint so the
+  // physics body offset stays valid and animations swap cleanly.
+  const drawVox = (o: {
+    bob?: number; // vertical breathing offset
+    lean?: number; // forward lean in px (attacks/jump)
+    legs: 'stand' | 'stepA' | 'pass' | 'stepB' | 'tuck' | 'reach' | 'back';
+    backArm: 'side' | 'fwd' | 'swingA' | 'swingB' | 'up' | 'guard' | 'jab' | 'chop' | 'wind';
+    frontArm: 'side' | 'fwd' | 'swingA' | 'swingB' | 'up' | 'guard' | 'jab' | 'chop' | 'wind';
+    slash?: 1 | 2 | 3; // energy swoosh in front
+    hurt?: boolean;
+  }) => {
+    const bob = o.bob ?? 0;
+    const lean = o.lean ?? 0;
+    const cx = 16 + lean; // torso center x, nudged by lean
+
+    // Legs (drawn first, behind torso)
+    const legTop = 27 + bob;
+    const drawLeg = (x: number, footDx: number, len: number) => {
+      rr(x, legTop, 5, len, 2, p.player);
+      // a dark boot reads as a foot and grounds the silhouette
+      g.fillStyle(p.ink, 1);
+      g.fillRoundedRect(x + footDx, legTop + len - 3, 7, 4, 2);
+    };
+    switch (o.legs) {
+      case 'stand':
+        drawLeg(cx - 6, -1, 11);
+        drawLeg(cx + 2, 0, 11);
+        break;
+      case 'stepA': // running contact: front leg reaching forward
+        drawLeg(cx + 4, 1, 9);
+        drawLeg(cx - 8, -2, 9);
+        break;
+      case 'pass': // legs gathered under the body
+        drawLeg(cx - 3, -1, 8);
+        drawLeg(cx + 1, 1, 12);
+        break;
+      case 'stepB':
+        drawLeg(cx + 6, 1, 9);
+        drawLeg(cx - 6, -2, 10);
+        break;
+      case 'tuck': // jumping up: knees pulled up
+        drawLeg(cx - 5, -1, 6);
+        drawLeg(cx + 2, 1, 7);
+        break;
+      case 'reach': // falling: legs reaching for ground
+        drawLeg(cx - 6, -1, 12);
+        drawLeg(cx + 3, 1, 10);
+        break;
+      case 'back': // hurt recoil: weight shifted back
+        drawLeg(cx - 7, -2, 10);
+        drawLeg(cx + 3, 2, 9);
+        break;
+    }
+
+    // Torso
+    rr(cx - 9, 15 + bob, 18, 14, 6, p.player);
+    // Chest chevron — the reclaimed voice, always bright
+    g.lineStyle(2, p.projectile, 1);
+    g.beginPath();
+    g.moveTo(cx - 4, 25 + bob);
+    g.lineTo(cx, 21 + bob);
+    g.lineTo(cx + 4, 25 + bob);
+    g.strokePath();
+
+    // Head + visor
+    rr(cx - 7, 3 + bob, 14, 13, 6, p.player);
+    fillRR(cx - 5, 7 + bob, 12, 4, 2, p.playerAccent); // bright forward visor
+    g.lineStyle(1.2, p.ink, 1);
+    g.strokeRoundedRect(cx - 5, 7 + bob, 12, 4, 2);
+    if (o.hurt) {
+      // a small stunned spark by the head — still unbothered, just knocked back
+      g.lineStyle(2, p.projectile, 1);
+      g.strokeCircle(cx + 11, 5 + bob, 3);
+    }
+
+    // Arms (hands are dark "gloves")
+    const shoulderY = 17 + bob;
+    const drawArm = (pose: string, front: boolean) => {
+      const baseX = front ? cx + 6 : cx - 6;
+      switch (pose) {
+        case 'side':
+          rr(baseX - 2, shoulderY, 4, 11, 2, p.player);
+          fillC(baseX, shoulderY + 11, 2.4, p.ink);
+          break;
+        case 'fwd':
+        case 'swingA':
+          rr(baseX - 1, shoulderY, 4, 9, 2, p.player);
+          fillC(baseX + 3, shoulderY + 8, 2.4, p.ink);
+          break;
+        case 'swingB':
+          rr(baseX - 4, shoulderY - 1, 4, 9, 2, p.player);
+          fillC(baseX - 3, shoulderY + 7, 2.4, p.ink);
+          break;
+        case 'up':
+          rr(baseX - 1, shoulderY - 8, 4, 11, 2, p.player);
+          fillC(baseX + 1, shoulderY - 8, 2.4, p.ink);
+          break;
+        case 'guard':
+          rr(baseX - 2, shoulderY - 2, 5, 7, 2, p.player);
+          fillC(baseX + 1, shoulderY - 2, 2.6, p.ink);
+          break;
+        case 'jab': // straight forward punch
+          rr(cx + 6, shoulderY + 1, 11, 4, 2, p.player);
+          fillC(cx + 17, shoulderY + 3, 3, p.ink);
+          break;
+        case 'chop': // arm high, coming down
+          rr(cx + 5, shoulderY - 7, 4, 10, 2, p.player);
+          fillC(cx + 7, shoulderY - 7, 3, p.ink);
+          break;
+        case 'wind': // finisher wind-up/extend, big reach
+          rr(cx + 5, shoulderY, 13, 5, 2, p.player);
+          fillC(cx + 18, shoulderY + 2, 3.2, p.ink);
+          break;
+      }
+    };
+    drawArm(o.backArm, false);
+    drawArm(o.frontArm, true);
+
+    // Energy swoosh in front for attacks — a bright crescent, bigger on the finisher
+    if (o.slash) {
+      const sy = 18 + bob;
+      g.lineStyle(o.slash === 3 ? 4 : 2.5, p.projectile, o.slash === 3 ? 1 : 0.9);
+      g.beginPath();
+      if (o.slash === 1) g.arc(cx + 12, sy, 9, -0.9, 0.7, false);
+      else if (o.slash === 2) g.arc(cx + 12, sy + 2, 10, -0.5, 1.1, false);
+      else g.arc(cx + 11, sy, 15, -1.1, 1.1, false);
+      g.strokePath();
+    }
+  };
+
+  gen('vox-player', 32, 40, () => drawVox({ legs: 'stand', backArm: 'side', frontArm: 'side' }));
+  gen('vox-player-idle1', 32, 40, () =>
+    drawVox({ bob: 1, legs: 'stand', backArm: 'side', frontArm: 'side' }),
+  );
+  gen('vox-player-run0', 32, 40, () => drawVox({ legs: 'stepA', backArm: 'swingB', frontArm: 'fwd' }));
+  gen('vox-player-run1', 32, 40, () =>
+    drawVox({ bob: -1, legs: 'pass', backArm: 'side', frontArm: 'fwd' }),
+  );
+  gen('vox-player-run2', 32, 40, () => drawVox({ legs: 'stepB', backArm: 'fwd', frontArm: 'swingB' }));
+  gen('vox-player-run3', 32, 40, () =>
+    drawVox({ bob: -1, legs: 'pass', backArm: 'fwd', frontArm: 'side' }),
+  );
+  gen('vox-player-jump', 32, 40, () =>
+    drawVox({ bob: -1, legs: 'tuck', backArm: 'up', frontArm: 'up' }),
+  );
+  gen('vox-player-fall', 32, 40, () =>
+    drawVox({ bob: 1, legs: 'reach', backArm: 'side', frontArm: 'up' }),
+  );
+  gen('vox-player-atk1', 32, 40, () =>
+    drawVox({ lean: 1, legs: 'stepB', backArm: 'guard', frontArm: 'jab', slash: 1 }),
+  );
+  gen('vox-player-atk2', 32, 40, () =>
+    drawVox({ lean: 1, legs: 'stepA', backArm: 'side', frontArm: 'chop', slash: 2 }),
+  );
+  gen('vox-player-atk3', 32, 40, () =>
+    drawVox({ lean: 2, legs: 'stepB', backArm: 'swingB', frontArm: 'wind', slash: 3 }),
+  );
+  gen('vox-player-hurt', 32, 40, () =>
+    drawVox({ lean: -2, legs: 'back', backArm: 'guard', frontArm: 'guard', hurt: true }),
+  );
+
+  // Crowder (#1) — a hunched figure fused to a glowing phone, oblivious and pathetic.
   gen('vox-crowder', 32, 36, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(4, 4, 22, 30, 6);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(11, 12, 2);
-    g.fillCircle(19, 12, 2);
-    g.fillStyle(p.playerAccent, 0.9);
-    g.fillRect(24, 14, 6, 11); // the ever-present phone
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(25, 16, 4, 7);
+    // little shuffling legs
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 31, 5, 4, 1);
+    g.fillRoundedRect(17, 31, 5, 4, 1);
+    rr(6, 6, 20, 26, 7, p.enemy); // hunched body
+    rr(9, 2, 14, 12, 6, p.enemy); // head, tilted down over the phone
+    // downcast eyes (staring at the screen)
+    fillC(13, 10, 1.6, p.ink);
+    fillC(19, 10, 1.6, p.ink);
+    // the ever-present phone, held up, screen glowing
+    rr(20, 14, 8, 12, 2, p.enemyAccent);
+    fillRR(21, 15, 6, 8, 1, p.playerAccent, 0.95);
+    // the arm cradling it
+    rr(14, 18, 8, 4, 2, p.enemy);
   });
 
-  // Blocker (#4) — a wall with a smug face. Exists to be in the way.
+  // Blocker (#4) — a smug bouncer-wall. Harmless, just endlessly In The Way.
   gen('vox-blocker', 48, 48, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(1, 3, 46, 44, 5);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(6, 26, 36, 6); // crossed arms
-    g.fillCircle(17, 15, 2.5);
-    g.fillCircle(31, 15, 2.5);
+    // stubby feet
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(12, 44, 8, 4, 1);
+    g.fillRoundedRect(28, 44, 8, 4, 1);
+    rr(3, 4, 42, 41, 7, p.enemy); // the wall of a torso
+    // shades: one long smug bar with two lenses
+    fillRR(9, 14, 30, 7, 3, p.enemyAccent);
+    inkRR(9, 14, 30, 7, 3);
+    fillC(17, 17, 2, p.ink);
+    fillC(31, 17, 2, p.ink);
+    // flat, unbothered mouth
+    g.lineStyle(2, p.ink, 1);
+    g.lineBetween(18, 27, 30, 27);
+    // crossed arms bar — the "you shall not pass"
+    rr(6, 31, 36, 8, 3, p.enemyAccent);
   });
 
-  // Starer (#13) — a floating eyeball with an attitude.
+  // Starer (#13) — a floating eyeball with an attitude, framed by an angry brow.
   gen('vox-starer', 32, 32, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillCircle(16, 16, 14);
-    g.fillStyle(p.playerAccent, 1);
-    g.fillCircle(16, 15, 7);
+    circ(16, 17, 13, p.playerAccent); // the white of the eye
+    fillC(16, 17, 6.5, p.enemy); // iris
+    fillC(16, 17, 3, p.ink); // pupil
+    fillC(13.5, 15, 1.6, p.playerAccent); // catchlight
+    // heavy angry eyebrow across the top — pure silhouette attitude
     g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(16, 15, 3.2);
+    g.fillTriangle(3, 8, 29, 3, 29, 9);
+    g.lineStyle(INK, p.ink, 1);
+    g.strokeTriangle(3, 8, 29, 3, 29, 9);
   });
 
-  // Mimic (#48) — dresses like you, moves like you, is not you.
+  // Mimic (#48) — copies VOX's silhouette in enemy colors, with a cracked knock-off
+  // visor and a lopsided emblem so it always reads as "not you."
   gen('vox-mimic', 32, 40, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(4, 4, 24, 34, 7);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(8, 11, 18, 5); // a knock-off visor
-    g.fillRect(6, 32, 8, 4);
-    g.fillRect(18, 32, 8, 4);
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 34, 6, 4, 1);
+    g.fillRoundedRect(18, 34, 6, 4, 1);
+    rr(7, 15, 18, 15, 6, p.enemy); // torso
+    rr(9, 3, 14, 13, 6, p.enemy); // head
+    fillRR(11, 7, 12, 4, 2, p.enemyAccent); // knock-off visor
+    // a crack across the visor
+    g.lineStyle(1.2, p.ink, 1);
+    g.lineBetween(15, 7, 17, 11);
+    // lopsided emblem
+    g.lineStyle(2, p.enemyAccent, 1);
+    g.beginPath();
+    g.moveTo(11, 25);
+    g.lineTo(15, 22);
+    g.lineTo(18, 26);
+    g.strokePath();
+    // arms at sides
+    rr(6, 17, 4, 11, 2, p.enemy);
+    rr(22, 17, 4, 11, 2, p.enemy);
   });
 
-  // Specterwave — the boss. A big smug ghost that shrinks as you hit it.
+  // A reusable smug ghost body for the shrinking bosses.
+  const drawGhost = (
+    w: number,
+    h: number,
+    body: number,
+    face: (cx: number) => void,
+  ) => {
+    const cx = w / 2;
+    g.fillStyle(body, 1);
+    g.fillEllipse(cx, h * 0.42, w * 0.9, h * 0.74);
+    // wavy skirt tails along the bottom
+    const tails = 4;
+    const tw = (w * 0.86) / tails;
+    const left = w * 0.07;
+    for (let i = 0; i < tails; i++) {
+      const x0 = left + i * tw;
+      g.fillTriangle(x0, h * 0.68, x0 + tw, h * 0.68, x0 + tw / 2, h * 0.95);
+    }
+    // outline the head dome
+    g.lineStyle(2, p.ink, 1);
+    g.strokeEllipse(cx, h * 0.42, w * 0.9, h * 0.74);
+    face(cx);
+  };
+
+  // Specterwave — the boss. A big smug ghost riding a crowd of little heads (the "wave"),
+  // absurd rather than looming. Reads well at 55%–100% as it shrinks.
   gen('vox-boss', 96, 112, () => {
-    g.fillStyle(p.boss, 1);
-    g.fillEllipse(48, 46, 86, 82);
-    g.fillTriangle(8, 76, 26, 76, 17, 104);
-    g.fillTriangle(30, 80, 48, 80, 39, 108);
-    g.fillTriangle(52, 80, 70, 80, 61, 108);
-    g.fillTriangle(72, 76, 90, 76, 81, 104);
-    g.fillStyle(p.playerAccent, 1);
-    g.fillCircle(34, 40, 8);
-    g.fillCircle(62, 40, 8);
-    g.fillStyle(p.bossAccent, 1);
-    g.fillCircle(34, 41, 3.5);
-    g.fillCircle(62, 41, 3.5);
-    g.fillRect(36, 60, 24, 4); // flat unimpressed mouth
+    drawGhost(96, 112, p.boss, (cx) => {
+      // heavy-lidded, unimpressed eyes
+      circ(cx - 14, 40, 8, p.playerAccent);
+      circ(cx + 14, 40, 8, p.playerAccent);
+      fillC(cx - 14, 42, 3.5, p.ink);
+      fillC(cx + 14, 42, 3.5, p.ink);
+      g.fillStyle(p.bossAccent, 1); // droopy lids
+      g.fillRect(cx - 22, 33, 16, 4);
+      g.fillRect(cx + 6, 33, 16, 4);
+      // flat unimpressed mouth
+      g.lineStyle(3, p.ink, 1);
+      g.lineBetween(cx - 12, 60, cx + 12, 60);
+      // a little cluster of crowd-heads it surfs on
+      g.fillStyle(p.bossAccent, 1);
+      for (const dx of [-24, -8, 8, 24]) g.fillCircle(cx + dx, 84, 6);
+      g.lineStyle(1.5, p.ink, 1);
+      for (const dx of [-24, -8, 8, 24]) g.strokeCircle(cx + dx, 84, 6);
+    });
   });
 
-  // The boss's crowd-wave pulse. Low and jumpable.
+  // The boss's crowd-wave pulse — a low rolling row of little heads. Clearly jumpable.
   gen('vox-wave', 44, 24, () => {
-    g.fillStyle(p.boss, 0.9);
-    g.fillRoundedRect(0, 4, 44, 20, 8);
-    g.fillStyle(p.bossAccent, 0.9);
-    g.fillRoundedRect(6, 10, 32, 12, 6);
+    fillRR(1, 12, 42, 11, 5, p.boss);
+    for (let i = 0; i < 4; i++) {
+      circ(6 + i * 11, 12, 6, p.bossAccent, 1.5);
+    }
+    g.lineStyle(INK, p.ink, 1);
+    g.strokeRoundedRect(1, 12, 42, 11, 5);
   });
 
   gen('vox-block', 32, 32, () => {
     g.fillStyle(p.platform, 1);
     g.fillRect(0, 0, 32, 32);
     g.fillStyle(p.ground, 1);
-    g.fillRect(0, 28, 32, 4);
-    g.lineStyle(2, p.skyBottom, 0.35);
-    g.strokeRect(1, 1, 30, 30);
+    g.fillRect(0, 26, 32, 6); // a solid capped top edge
+    g.fillStyle(p.shine, 0.12);
+    g.fillRect(0, 0, 32, 4); // faint top highlight
+    g.lineStyle(1.5, p.ink, 0.5);
+    g.strokeRect(0.75, 0.75, 30.5, 30.5);
   });
 
   // Beacon — VOX's checkpoint lamppost. Lighting one saves your spot.
   gen('vox-beacon', 20, 56, () => {
-    g.fillStyle(p.checkpoint, 1);
-    g.fillRect(8, 12, 4, 42);
-    g.fillCircle(10, 9, 8);
+    rr(7, 12, 6, 42, 2, p.checkpoint); // post
+    circ(10, 9, 8, p.checkpoint); // dark lamp
   });
   gen('vox-beacon-lit', 20, 56, () => {
-    g.fillStyle(p.checkpoint, 1);
-    g.fillRect(8, 12, 4, 42);
-    g.fillStyle(p.checkpointLit, 1);
-    g.fillCircle(10, 9, 8);
+    rr(7, 12, 6, 42, 2, p.checkpoint);
+    fillC(10, 9, 11, p.checkpointLit, 0.3); // glow halo
+    circ(10, 9, 8, p.checkpointLit); // lit lamp
+    fillC(8, 7, 2, p.shine, 0.9); // shine dot
   });
 
   gen('vox-particle', 6, 6, () => {
@@ -878,4 +1134,37 @@ export function ensureTextures(scene: Phaser.Scene): void {
 
   g.destroy();
   generatedFor = mode;
+}
+
+/**
+ * Register VOX's animations. Each frame is its own single-frame texture (see the
+ * `vox-player-*` keys above), so an animation is just an ordered list of texture keys.
+ * The calm-mode recolor regenerates those textures under the same keys, so the
+ * animations stay valid and never need rebuilding. Safe to call every scene create.
+ */
+export function ensureAnims(scene: Phaser.Scene): void {
+  const add = (
+    key: string,
+    frames: string[],
+    frameRate: number,
+    repeat: number,
+  ): void => {
+    if (scene.anims.exists(key)) return;
+    scene.anims.create({
+      key,
+      frames: frames.map((f) => ({ key: f })),
+      frameRate,
+      repeat,
+    });
+  };
+
+  add('vox-idle', ['vox-player', 'vox-player-idle1'], 2, -1);
+  add('vox-run', ['vox-player-run0', 'vox-player-run1', 'vox-player-run2', 'vox-player-run3'], 12, -1);
+  add('vox-jump', ['vox-player-jump'], 1, 0);
+  add('vox-fall', ['vox-player-fall'], 1, 0);
+  // Attack steps play once; the finisher lingers a beat longer.
+  add('vox-atk1', ['vox-player-atk1'], 1, 0);
+  add('vox-atk2', ['vox-player-atk2'], 1, 0);
+  add('vox-atk3', ['vox-player-atk3'], 1, 0);
+  add('vox-hurt', ['vox-player-hurt'], 1, 0);
 }
