@@ -60,6 +60,17 @@ const KEYS = [
   'vox-locker',
   'vox-call',
   'vox-boss6',
+  'vox-pushy',
+  'vox-knower',
+  'vox-lodge',
+  'vox-baiter',
+  'vox-proposition',
+  'vox-secret',
+  'vox-fakefriend',
+  'vox-fakefriend-real',
+  'vox-family',
+  'vox-lure',
+  'vox-boss7',
 ] as const;
 
 let generatedFor: 'normal' | 'calm' | null = null;
@@ -712,6 +723,130 @@ export function ensureTextures(scene: Phaser.Scene): void {
     g.fillStyle(p.playerAccent, 1);
     g.fillCircle(60, 33, 2);
     g.fillCircle(68, 47, 2);
+  });
+
+  // --- World 7: The Recruiters ---
+
+  // Pushy newcomer (#14) — arms out for a smothering hug.
+  gen('vox-pushy', 32, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(6, 10, 20, 28, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(16, 8, 6);
+    g.fillRect(0, 16, 8, 4);
+    g.fillRect(24, 16, 8, 4); // outstretched arms
+  });
+
+  // Knower (#15) — a wide staring eye with a knowing brow.
+  gen('vox-knower', 32, 28, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillEllipse(16, 15, 28, 20);
+    g.fillStyle(p.playerAccent, 1);
+    g.fillCircle(16, 15, 7);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(16, 15, 3);
+    g.lineStyle(2, p.enemyAccent, 1);
+    g.lineBetween(4, 5, 14, 9); // a raised brow
+  });
+
+  // Lodge (#19) — a members hall with an all-seeing symbol.
+  gen('vox-lodge', 52, 48, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(4, 16, 44, 30); // hall
+    g.fillTriangle(2, 16, 50, 16, 26, 2); // pediment
+    g.fillStyle(p.projectile, 0.9);
+    g.fillTriangle(26, 22, 20, 34, 32, 34); // eye triangle
+    g.fillStyle(p.bossAccent, 1);
+    g.fillCircle(26, 30, 2);
+  });
+
+  // Baiter (#25) — holds out a shiny lure on a stick.
+  gen('vox-baiter', 32, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(4, 10, 18, 28, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(13, 8, 6);
+    g.lineStyle(2, p.enemyAccent, 1);
+    g.lineBetween(20, 16, 30, 10); // fishing rod
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(30, 9, 3); // the lure
+  });
+
+  // Proposition (#26) — a leaning, leering figure (abstract).
+  gen('vox-proposition', 32, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(6, 8, 20, 30, 7);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(16, 8, 6);
+    g.fillStyle(p.hurt, 0.8);
+    g.fillRect(11, 18, 10, 3); // a leering grin
+  });
+
+  // Secret-keeper (#33) — a cloaked figure with a finger to its lips.
+  gen('vox-secret', 32, 40, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(5, 8, 22, 30, 8); // cloak
+    g.fillStyle(p.enemy, 1);
+    g.fillCircle(16, 9, 6);
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillRect(15, 10, 2, 8); // shhh finger
+  });
+
+  // Fake friend (#37) — wears VOX's own colors to seem safe.
+  gen('vox-fakefriend', 32, 40, () => {
+    g.fillStyle(p.player, 1); // friendly teal, just like you
+    g.fillRoundedRect(4, 4, 24, 34, 7);
+    g.fillStyle(p.playerAccent, 1);
+    g.fillRect(8, 11, 18, 5);
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(16, 26, 3); // a too-wide smile pin
+  });
+
+  // Fake friend, revealed (#37) — the mask drops to the enemy palette.
+  gen('vox-fakefriend-real', 32, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(4, 4, 24, 34, 7);
+    g.fillStyle(p.hurt, 1);
+    g.fillRect(8, 11, 18, 5); // a hostile glare
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillTriangle(10, 30, 16, 24, 22, 30); // a sharp grin
+  });
+
+  // Forced family (#49) — a bulky figure barging in.
+  gen('vox-family', 34, 40, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(3, 8, 28, 30, 6);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(17, 8, 7);
+    g.fillRect(3, 20, 28, 4); // arms crossed, pushing in
+  });
+
+  // Lure (#25 hazard) — a shiny trap on the ground.
+  gen('vox-lure', 22, 18, () => {
+    g.fillStyle(p.projectile, 0.95);
+    g.fillCircle(11, 11, 7);
+    g.fillStyle(p.hurt, 0.9);
+    g.fillCircle(11, 11, 3); // the hook inside the shine
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillCircle(8, 8, 1.5);
+  });
+
+  // The Recruiters — the final boss. A many-masked ghost, faces all around.
+  gen('vox-boss7', 100, 112, () => {
+    g.fillStyle(p.boss, 1);
+    g.fillEllipse(50, 46, 92, 82);
+    g.fillTriangle(10, 76, 28, 76, 19, 104);
+    g.fillTriangle(34, 80, 52, 80, 43, 108);
+    g.fillTriangle(56, 80, 74, 80, 65, 108);
+    g.fillTriangle(76, 76, 94, 76, 85, 104);
+    // A ring of little masks — all the fake faces it wears
+    g.fillStyle(p.playerAccent, 1);
+    const faces: [number, number][] = [[32, 34], [68, 34], [24, 54], [76, 54], [50, 30]];
+    for (const [fx, fy] of faces) g.fillCircle(fx, fy, 7);
+    g.fillStyle(p.bossAccent, 1);
+    for (const [fx, fy] of faces) g.fillCircle(fx, fy, 3);
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(50, 62, 5); // a recruiter's pin
   });
 
   g.destroy();
