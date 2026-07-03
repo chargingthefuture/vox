@@ -51,6 +51,15 @@ const KEYS = [
   'vox-beamer',
   'vox-striker',
   'vox-boss5',
+  'vox-spinner',
+  'vox-mailthief',
+  'vox-spammer',
+  'vox-runaround',
+  'vox-clunker',
+  'vox-vanisher',
+  'vox-locker',
+  'vox-call',
+  'vox-boss6',
 ] as const;
 
 let generatedFor: 'normal' | 'calm' | null = null;
@@ -583,6 +592,126 @@ export function ensureTextures(scene: Phaser.Scene): void {
     g.fillCircle(62, 42, 4); // burning points
     g.fillStyle(p.bossAccent, 1);
     for (let i = 0; i < 5; i++) g.fillRect(34 + i * 7, 66, 3, 10); // gritted teeth
+  });
+
+  // --- World 6: Specterrise ---
+
+  // Spinner (#20) — a buffering ring on a form.
+  gen('vox-spinner', 40, 44, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(2, 4, 36, 36, 4); // the form/page
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRect(8, 10, 24, 3);
+    g.fillRect(8, 30, 24, 3); // form lines
+    g.lineStyle(4, p.projectile, 0.9);
+    g.beginPath();
+    g.arc(20, 22, 8, 0, Math.PI * 1.4);
+    g.strokePath(); // the eternal spinner
+  });
+
+  // MailThief (#23) — a hooded figure clutching an envelope.
+  gen('vox-mailthief', 30, 38, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(4, 8, 20, 28, 6);
+    g.fillStyle(p.enemy, 1);
+    g.fillCircle(14, 8, 6);
+    g.fillStyle(p.playerAccent, 0.95);
+    g.fillRect(18, 20, 10, 7); // your envelope
+    g.lineStyle(1, p.enemyAccent, 1);
+    g.lineBetween(18, 20, 23, 24);
+    g.lineBetween(28, 20, 23, 24);
+  });
+
+  // Spammer (#35) — a ringing phone.
+  gen('vox-spammer', 30, 38, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(6, 4, 18, 30, 4);
+    g.fillStyle(p.playerAccent, 0.9);
+    g.fillRect(9, 9, 12, 18); // screen
+    g.fillStyle(p.hurt, 0.9);
+    g.fillCircle(15, 30, 2);
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(24, 6, 2);
+    g.fillCircle(27, 4, 1.5); // ring waves
+  });
+
+  // RunAround (#40) — a darting will-o'-the-wisp with an arrow.
+  gen('vox-runaround', 30, 30, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillCircle(15, 15, 11);
+    g.fillStyle(p.projectile, 0.95);
+    g.fillTriangle(9, 15, 18, 9, 18, 21); // a misleading arrow
+    g.fillRect(16, 13, 6, 4);
+  });
+
+  // Clunker (#42) — a sputtering junk car.
+  gen('vox-clunker', 52, 30, () => {
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillRoundedRect(2, 12, 48, 14, 4);
+    g.fillRoundedRect(12, 4, 26, 12, 4);
+    g.fillStyle(p.enemy, 1);
+    g.fillRect(16, 7, 18, 7);
+    g.fillStyle(p.enemyAccent, 1);
+    g.fillCircle(14, 27, 4);
+    g.fillCircle(38, 27, 4);
+    g.fillStyle(p.hurt, 0.8);
+    g.fillCircle(2, 10, 3); // a puff of backfire smoke
+  });
+
+  // Vanisher (#43) — a box flickering out of existence.
+  gen('vox-vanisher', 30, 30, () => {
+    g.fillStyle(p.enemy, 1);
+    g.fillRect(4, 8, 22, 18); // a parcel
+    g.lineStyle(2, p.enemyAccent, 1);
+    g.lineBetween(4, 14, 26, 14);
+    g.lineBetween(15, 8, 15, 26);
+    g.fillStyle(p.projectile, 0.6);
+    g.fillCircle(24, 8, 3); // a fading sparkle
+  });
+
+  // Locker (#51) — a padlock on your account.
+  gen('vox-locker', 40, 44, () => {
+    g.lineStyle(6, p.enemyAccent, 1);
+    g.beginPath();
+    g.arc(20, 16, 10, Math.PI, 0);
+    g.strokePath(); // shackle
+    g.fillStyle(p.enemy, 1);
+    g.fillRoundedRect(6, 16, 28, 24, 4); // body
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(20, 26, 3);
+    g.fillRect(19, 26, 2, 8); // keyhole
+  });
+
+  // Spam-call projectile (#35).
+  gen('vox-call', 20, 20, () => {
+    g.fillStyle(p.hurt, 0.9);
+    g.fillCircle(10, 10, 8);
+    g.fillStyle(p.playerAccent, 0.95);
+    // a little handset glyph
+    g.fillRoundedRect(6, 6, 8, 8, 2);
+    g.fillStyle(p.hurt, 0.9);
+    g.fillRect(8, 8, 4, 4);
+  });
+
+  // Specterrise — the boss. A server-stack ghost bristling with antennae.
+  gen('vox-boss6', 96, 112, () => {
+    g.fillStyle(p.boss, 1);
+    g.fillEllipse(48, 46, 86, 82);
+    g.fillTriangle(8, 76, 26, 76, 17, 104);
+    g.fillTriangle(30, 80, 48, 80, 39, 108);
+    g.fillTriangle(52, 80, 70, 80, 61, 108);
+    g.fillTriangle(72, 76, 90, 76, 81, 104);
+    g.fillStyle(p.bossAccent, 1);
+    g.fillRect(20, 30, 56, 6);
+    g.fillRect(20, 44, 56, 6);
+    g.fillRect(20, 58, 56, 6); // server slots
+    g.fillStyle(p.projectile, 1);
+    g.fillCircle(28, 33, 2);
+    g.fillCircle(28, 47, 2);
+    g.fillCircle(28, 61, 2); // blinking lights
+    g.fillStyle(p.playerAccent, 1);
+    g.fillCircle(60, 33, 2);
+    g.fillCircle(68, 47, 2);
   });
 
   g.destroy();

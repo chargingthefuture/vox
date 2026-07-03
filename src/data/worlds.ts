@@ -63,7 +63,7 @@ export const WORLDS: World[] = [
     meaning: 'a rise in sinister activity and dominance in society',
     theme: 'Systems and infrastructure sabotage',
     problemIds: [20, 23, 35, 40, 42, 43, 51],
-    implemented: [],
+    implemented: [20, 23, 35, 40, 42, 43, 51],
   },
   {
     id: 7,
