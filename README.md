@@ -117,10 +117,11 @@ world and the title and final screen mark it: VOX, Bane of the Specterati.
 |---|---|---|
 | Move | ← → or A D | left stick or d-pad |
 | Jump | Space, W, or ↑ | bottom face button (A) |
-| Attack (combo: press again) | J or X | any other face button |
+| Attack (combo: press again) | J or X | any non-jump face button, shoulder, or trigger |
 
 Gamepads that use the browser's standard mapping (Xbox-style, 8BitDo, DualShock) work out
-of the box; Start also confirms menus. On phones and tablets, on-screen touch buttons
+of the box; Start also confirms menus. Attack is intentionally forgiving — any button that
+isn't the jump button attacks — so different pad modes all work without remapping. On phones and tablets, on-screen touch buttons
 appear (move on the left, attack and jump on the right). The game plays sideways —
 portrait shows a rotate prompt.
 

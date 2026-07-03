@@ -30,8 +30,8 @@ export class World1Scene extends BaseWorldScene {
     this.block(2880, 330, 96, 24);
     this.block(3120, 396, 128, 24);
 
-    this.hint(200, 'move ← → (or A D)\njump: Space or W');
-    this.hint(560, 'attack: J or X\npress again for a 3-hit combo');
+    this.hint(200, 'move: ← → / stick\njump: Space / bottom button');
+    this.hint(560, 'attack: J / X / any other pad button\npress again for a 3-hit combo');
     this.hint(1250, 'beacons save your spot');
 
     // Section 1 — meet the Crowders

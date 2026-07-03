@@ -27,7 +27,10 @@ export function sampleGamepad(frame: number): void {
     if (ax < -STICK_DEADZONE || b(14)) curr.add('left');
     if (ax > STICK_DEADZONE || b(15)) curr.add('right');
     if (b(0)) curr.add('jump'); // bottom face button
-    if (b(1) || b(2) || b(3)) curr.add('attack'); // any other face button
+    // Attack on any non-jump face button (1/2/3) OR any shoulder/trigger (4-7). Forgiving on
+    // purpose: pads vary by mode (X-input, D-input, Switch), so almost anything that isn't the
+    // jump button attacks — no one should get stuck hunting for the attack button.
+    if (b(1) || b(2) || b(3) || b(4) || b(5) || b(6) || b(7)) curr.add('attack');
     if (b(9)) curr.add('start');
   }
 }
