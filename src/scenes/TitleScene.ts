@@ -49,12 +49,18 @@ export class TitleScene extends Phaser.Scene {
     this.add
       .text(W / 2, 158, 'take your voice back', { fontFamily: 'monospace', fontSize: '20px', color: p.uiAccent })
       .setOrigin(0.5);
+
+    const allDone = WORLDS.filter((w) => w.implemented.length > 0).every((w) =>
+      progress.worldsCleared.includes(w.id),
+    );
     this.add
       .text(
         W / 2,
         196,
-        'Every enemy is a real harassment tactic, drawn as the cartoon it deserves to be.\nFlatten it, and see the real-world tool that answers it.',
-        { fontFamily: 'monospace', fontSize: '13px', color: p.uiDim, align: 'center' },
+        allDone
+          ? '✓ every world cleared — all 51 tactics flattened. VOX, Bane of the Specterati.'
+          : 'Every enemy is a real harassment tactic, drawn as the cartoon it deserves to be.\nFlatten it, and see the real-world tool that answers it.',
+        { fontFamily: 'monospace', fontSize: '13px', color: allDone ? p.uiAccent : p.uiDim, align: 'center' },
       )
       .setOrigin(0.5);
 

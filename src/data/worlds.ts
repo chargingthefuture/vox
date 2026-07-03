@@ -71,7 +71,7 @@ export const WORLDS: World[] = [
     meaning: 'entrapment, fake friends, and forced secrecy',
     theme: 'Entrapment, fake friends, occult secrecy',
     problemIds: [14, 15, 19, 25, 26, 33, 37, 49],
-    implemented: [],
+    implemented: [14, 15, 19, 25, 26, 33, 37, 49],
   },
 ];
 

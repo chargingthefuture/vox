@@ -22,7 +22,7 @@ lived these experiences.
 - The payoff loop: defeat a tactic in-game and a small skippable card names the real
   Charging The Future tool that answers it in real life.
 
-## Current build — Worlds 1 through 6
+## Current build — all seven worlds, all 51 problems
 
 **World 1 — Specterwave** (public crowding and street harassment):
 
@@ -82,12 +82,23 @@ out and back, hittable only while present; the Locker (#51 frozen accounts) is a
 smash to unfreeze. The Specterrise boss, "the system with your name on hold", floods you with
 spam-call fans and jams the works with clunkers.
 
+**World 7 — The Recruiters** (entrapment, fake friends, occult secrecy) — the final world,
+opens after World 6 is cleared. All eight problems: the PushyNewcomer (#14) smothers and
+slows you; the Knower (#15) dashes to where you're about to be; the Lodge (#19) is a
+members-only hall you smash; the Baiter (#25) drops biting lures — don't take the bait; the
+Proposition (#26) lunges and is left open; the SecretKeeper (#33) is armored until the
+secret slips out, hittable only in that window; the FakeFriend (#37) wears your own colors
+until it drops the act; and Forced family (#49) barges in and shoves. The final boss, THE
+RECRUITERS — "the club that was never yours to join" — recruits fake friends and dangles
+lures. Beat it and the whole network is done.
+
 Everywhere: bosses shrink with every hit, beacons save your spot generously, going down
 costs nothing (the boss keeps its damage), and the world-clear screen lists that world's
 whole playbook with the real-life answer to each tactic. The title screen has a compact
 "play" button plus a **select world** menu; each world unlocks as you clear the one before.
 
-World 7 (The Recruiters) is the last one remaining.
+**All 51 problems the app lists are now represented across the seven worlds.** Clear every
+world and the title and final screen mark it: VOX, Bane of the Specterati.
 
 ## Safety and accessibility
 

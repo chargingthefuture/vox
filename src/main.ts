@@ -7,6 +7,7 @@ import { World3Scene } from './scenes/world/World3Scene';
 import { World4Scene } from './scenes/world/World4Scene';
 import { World5Scene } from './scenes/world/World5Scene';
 import { World6Scene } from './scenes/world/World6Scene';
+import { World7Scene } from './scenes/world/World7Scene';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -31,6 +32,7 @@ new Phaser.Game({
     World4Scene,
     World5Scene,
     World6Scene,
+    World7Scene,
     UIScene,
   ],
 });

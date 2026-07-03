@@ -308,7 +308,7 @@ export class UIScene extends Phaser.Scene {
     );
     overlay.add(
       this.add
-        .text(W / 2, 138, `The whole ${world.name} playbook, and what answers it in real life:`, {
+        .text(W / 2, 138, `The whole ${world.name.replace(/^The /, '')} playbook, and what answers it in real life:`, {
           fontFamily: 'monospace',
           fontSize: '13px',
           color: p.uiDim,
@@ -336,11 +336,28 @@ export class UIScene extends Phaser.Scene {
     col(lines.slice(0, half), 60);
     col(lines.slice(half), 500);
 
+    // Every implemented world cleared → the whole Specterati playbook is done.
+    const allDone = WORLDS.filter((w) => w.implemented.length > 0).every((w) =>
+      progress.worldsCleared.includes(w.id),
+    );
     const next = WORLDS.find((w) => w.id === worldId + 1);
-    const nextUp =
-      next && next.implemented.length > 0
-        ? `World ${next.id}: ${next.name.replace(/^The /, '')} is now open`
-        : `Worlds ${worldId + 1}–7 are on their way`;
+    let nextUp: string;
+    if (allDone) {
+      nextUp = 'you flattened all 51 tactics — the Specterati are done';
+      overlay.add(
+        this.add
+          .text(W / 2, H - 72, 'VOX — Bane of the Specterati.', {
+            fontFamily: 'monospace',
+            fontSize: '16px',
+            color: p.uiAccent,
+          })
+          .setOrigin(0.5),
+      );
+    } else if (next && next.implemented.length > 0) {
+      nextUp = `World ${next.id}: ${next.name.replace(/^The /, '')} is now open`;
+    } else {
+      nextUp = `Worlds ${worldId + 1}–7 are on their way`;
+    }
     overlay.add(
       this.add
         .text(W / 2, H - 44, `press any key or tap — ${nextUp}`, {
