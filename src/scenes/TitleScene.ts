@@ -15,6 +15,7 @@ import {
   type BindableAction,
 } from '../systems/settings';
 import { cue } from '../systems/sound';
+import { toggleFullscreen } from '../systems/fullscreen';
 import { keyLabel } from '../systems/input';
 import { exportSaveCode, exportSaveJSON, importSave } from '../systems/savecode';
 import { ensureTextures } from '../systems/textures';
@@ -172,6 +173,20 @@ export class TitleScene extends Phaser.Scene {
           item.action();
         });
       }
+    });
+
+    // Fullscreen toggle, tucked in the top-right. On mobile the game also enters fullscreen
+    // on the first tap (see main.ts); this lets anyone toggle it and desktop opt in.
+    const fsBtn = this.add
+      .text(W - 18, 16, '⛶', { fontFamily: 'monospace', fontSize: '24px', color: p.uiDim })
+      .setOrigin(1, 0)
+      .setDepth(50)
+      .setInteractive({ useHandCursor: true });
+    fsBtn.on('pointerover', () => fsBtn.setColor(p.uiAccent));
+    fsBtn.on('pointerout', () => fsBtn.setColor(p.uiDim));
+    fsBtn.on('pointerdown', () => {
+      cue('ui');
+      toggleFullscreen(this);
     });
 
     addSceneFX(this);

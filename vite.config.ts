@@ -5,6 +5,6 @@ export default defineConfig({
   base: '/vox/',
   build: {
     target: 'es2020',
-    chunkSizeWarningLimit: 1600, // phaser is one big chunk; that is expected
+    chunkSizeWarningLimit: 2000, // phaser is one big chunk; that is expected
   },
 });
