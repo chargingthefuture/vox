@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { enterFullscreen } from './systems/fullscreen';
 import * as savecode from './systems/savecode';
 import { TitleScene } from './scenes/TitleScene';
 import { UIScene } from './scenes/UIScene';
@@ -36,6 +37,15 @@ const game = new Phaser.Game({
     World7Scene,
     UIScene,
   ],
+});
+
+// Open in fullscreen landscape on the first user gesture — browsers require a gesture, and
+// it is what mobile players expect. Desktop keeps its window (the title has a toggle button).
+game.events.once(Phaser.Core.Events.READY, () => {
+  if (game.device.os.desktop) return;
+  const goFullscreen = (): void => enterFullscreen(game.scale);
+  window.addEventListener('pointerdown', goFullscreen, { once: true });
+  window.addEventListener('keydown', goFullscreen, { once: true });
 });
 
 // Test-only handle for the save code helpers (used by the automated browser checks).
