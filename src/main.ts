@@ -10,7 +10,7 @@ import { World5Scene } from './scenes/world/World5Scene';
 import { World6Scene } from './scenes/world/World6Scene';
 import { World7Scene } from './scenes/world/World7Scene';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   width: 960,
@@ -41,4 +41,5 @@ new Phaser.Game({
 // Test-only handle for the save code helpers (used by the automated browser checks).
 if (new URLSearchParams(location.search).has('debug')) {
   (window as unknown as { __voxSave: typeof savecode }).__voxSave = savecode;
+  (window as unknown as { __voxGame: Phaser.Game }).__voxGame = game;
 }

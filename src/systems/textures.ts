@@ -889,327 +889,481 @@ export function ensureTextures(scene: Phaser.Scene): void {
 
   // --- World 5: Specterbane ---
 
-  // Ringer (#8) — a tuning-fork-ish emitter.
+  // Ringer (#8) — a tuning-fork emitter on a stand, humming a note that wears you down.
   gen('vox-ringer', 32, 40, () => {
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(14, 20, 4, 20); // stem
-    g.lineStyle(4, p.enemy, 1);
-    g.lineBetween(16, 22, 8, 4);
-    g.lineBetween(16, 22, 24, 4); // fork tines
-    g.fillStyle(p.projectile, 1);
-    g.fillCircle(16, 22, 3);
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 37, 14, 3, 1); // base
+    rr(14, 20, 5, 18, 1, p.enemyAccent); // stem
+    g.lineStyle(5, p.enemy, 1);
+    g.lineBetween(16, 22, 8, 3);
+    g.lineBetween(16, 22, 24, 3); // fork tines
+    g.lineStyle(1.5, p.ink, 1);
+    g.lineBetween(16, 22, 8, 3);
+    g.lineBetween(16, 22, 24, 3);
+    fillC(16, 22, 3.5, p.projectile); // glowing node
+    g.strokeCircle(16, 22, 3.5);
+    // hum arcs off the tines
+    g.lineStyle(1.5, p.projectile, 0.6);
+    g.strokeCircle(8, 3, 4);
+    g.strokeCircle(24, 3, 4);
   });
 
   // Ring-wave (#8 projectile) — a hollow ring rolling out.
   gen('vox-ringwave', 34, 34, () => {
-    g.lineStyle(5, p.projectile, 0.85);
+    g.lineStyle(5, p.projectile, 0.9);
     g.strokeCircle(17, 17, 13);
+    g.lineStyle(2, p.projectile, 0.4);
+    g.strokeCircle(17, 17, 8);
   });
 
-  // False doctor (#21) — a coat with a clipboard, half-there.
+  // False doctor (#21) — a coat, clipboard, and a fake-soothing tilt of the head.
   gen('vox-doctor', 30, 40, () => {
-    g.fillStyle(p.playerAccent, 0.85);
-    g.fillRoundedRect(4, 10, 22, 28, 5); // white coat
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(15, 8, 6);
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(8, 37, 5, 3, 1);
+    g.fillRoundedRect(16, 37, 5, 3, 1);
+    rr(4, 12, 22, 26, 5, p.playerAccent); // white coat (light)
     g.fillStyle(p.enemy, 1);
-    g.fillRect(18, 20, 8, 10); // clipboard
-    g.fillStyle(p.hurt, 0.8);
-    g.fillRect(12, 22, 6, 2); // a stethoscope hint
+    g.fillTriangle(9, 12, 21, 12, 15, 22); // lapels
+    circ(15, 8, 6, p.enemyAccent); // head
+    fillC(12, 8, 1.4, p.ink);
+    fillC(18, 8, 1.4, p.ink);
+    g.lineStyle(1.4, p.ink, 1);
+    g.beginPath();
+    g.arc(15, 9, 3.5, 0.15, Math.PI - 0.15, false); // sweet-talking smile
+    g.strokePath();
+    // stethoscope
+    g.lineStyle(1.5, p.hurt, 0.85);
+    g.beginPath();
+    g.arc(15, 20, 5, 0.2, Math.PI - 0.2, false);
+    g.strokePath();
+    fillC(20, 22, 1.6, p.hurt);
+    rr(18, 24, 8, 9, 1, p.enemy); // clipboard
   });
 
-  // Drainer (#24) — a heavy, sagging weight.
+  // Drainer (#24) — a heavy sagging blob that leeches your energy; droopy, exhausting.
   gen('vox-drainer', 32, 32, () => {
+    circ(16, 15, 13, p.enemy);
     g.fillStyle(p.enemy, 1);
-    g.fillCircle(16, 16, 13);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillEllipse(16, 22, 18, 8); // sagging drip
-    g.fillStyle(p.bossAccent, 0.9);
-    g.fillCircle(11, 13, 2);
-    g.fillCircle(21, 13, 2); // tired eyes
+    g.fillEllipse(16, 24, 20, 10); // sagging bottom
+    g.lineStyle(INK, p.ink, 1);
+    g.strokeEllipse(16, 22, 22, 14);
+    // half-lidded tired eyes
+    fillC(11, 14, 2.4, p.enemyAccent);
+    fillC(21, 14, 2.4, p.enemyAccent);
+    fillC(11, 15, 1.1, p.ink);
+    fillC(21, 15, 1.1, p.ink);
+    g.lineStyle(1.5, p.ink, 1);
+    g.lineBetween(8, 12, 14, 13); // droopy lids
+    g.lineBetween(18, 13, 24, 12);
+    // a downturned mouth + drip
+    g.beginPath();
+    g.arc(16, 22, 4, Math.PI + 0.3, -0.3, false);
+    g.strokePath();
+    fillC(16, 30, 1.6, p.enemyAccent);
   });
 
-  // Beamer (#28) — a spotlight head.
+  // Beamer (#28) — a swiveling spotlight that pins you in a harsh interrogating glare.
   gen('vox-beamer', 32, 26, () => {
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRoundedRect(4, 6, 18, 14, 4); // housing
-    g.fillStyle(p.projectile, 0.95);
-    g.fillCircle(22, 13, 7); // the lamp
-    g.fillStyle(p.playerAccent, 0.9);
-    g.fillCircle(22, 13, 3);
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(3, 22, 12, 3, 1); // base
+    rr(3, 6, 17, 14, 4, p.enemyAccent); // housing
+    circ(21, 13, 7, p.projectile); // lamp
+    fillC(21, 13, 3, p.playerAccent);
+    // beam cone
+    g.fillStyle(p.projectile, 0.25);
+    g.fillTriangle(27, 9, 27, 17, 32, 13);
   });
 
-  // Striker (#45) — a coiled fist.
+  // Striker (#45) — a coiled boxing-glove fist on a spring, poised to jab.
   gen('vox-striker', 32, 36, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(6, 8, 20, 24, 8);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(20, 14, 10, 8); // knuckles jabbing out
-    g.fillStyle(p.bossAccent, 1);
-    g.fillCircle(13, 16, 2);
-    g.fillCircle(19, 16, 2);
+    // spring/arm
+    g.lineStyle(3, p.ink, 1);
+    g.lineBetween(4, 30, 10, 24);
+    g.lineBetween(10, 24, 4, 20);
+    g.lineBetween(4, 20, 10, 16);
+    rr(6, 6, 18, 22, 9, p.enemy); // the glove
+    fillC(21, 15, 4, p.enemyAccent); // thumb
+    // angry brow eyes on the glove
+    fillC(12, 13, 2, p.bossAccent);
+    fillC(18, 13, 2, p.bossAccent);
+    g.lineStyle(2, p.ink, 1);
+    g.lineBetween(9, 9, 14, 12);
+    g.lineBetween(21, 9, 16, 12);
   });
 
-  // Specterbane — the boss. A skull-ish ghost wreathed in beams.
+  // Specterbane — the boss. A skull-faced ghost wreathed in interrogating beams.
   gen('vox-boss5', 96, 112, () => {
-    g.fillStyle(p.boss, 1);
-    g.fillEllipse(48, 46, 86, 82);
-    g.fillTriangle(8, 76, 26, 76, 17, 104);
-    g.fillTriangle(30, 80, 48, 80, 39, 108);
-    g.fillTriangle(52, 80, 70, 80, 61, 108);
-    g.fillTriangle(72, 76, 90, 76, 81, 104);
-    g.fillStyle(p.bossAccent, 1);
-    g.fillCircle(34, 42, 11);
-    g.fillCircle(62, 42, 11); // hollow sockets
-    g.fillStyle(p.projectile, 0.9);
-    g.fillCircle(34, 42, 4);
-    g.fillCircle(62, 42, 4); // burning points
-    g.fillStyle(p.bossAccent, 1);
-    for (let i = 0; i < 5; i++) g.fillRect(34 + i * 7, 66, 3, 10); // gritted teeth
+    drawGhost(96, 112, p.boss, (cx) => {
+      // hollow burning sockets
+      circ(cx - 14, 42, 11, p.bossAccent);
+      circ(cx + 14, 42, 11, p.bossAccent);
+      fillC(cx - 14, 42, 4.5, p.projectile);
+      fillC(cx + 14, 42, 4.5, p.projectile);
+      // gritted teeth
+      g.fillStyle(p.playerAccent, 1);
+      g.fillRoundedRect(cx - 16, 62, 32, 10, 2);
+      g.lineStyle(1.5, p.ink, 1);
+      for (let i = -2; i <= 2; i++) g.lineBetween(cx + i * 6, 62, cx + i * 6, 72);
+      g.strokeRoundedRect(cx - 16, 62, 32, 10, 2);
+      // beams radiating out
+      g.lineStyle(2, p.projectile, 0.5);
+      for (const a of [-2.4, -1.9, -1.2, 1.2, 1.9, 2.4]) {
+        g.lineBetween(cx + Math.cos(a) * 30, 46 + Math.sin(a) * 26, cx + Math.cos(a) * 46, 46 + Math.sin(a) * 40);
+      }
+    });
   });
 
   // --- World 6: Specterrise ---
 
-  // Spinner (#20) — a buffering ring on a form.
+  // Spinner (#20) — a form that buffers forever; an eternal loading ring over red tape.
   gen('vox-spinner', 40, 44, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(2, 4, 36, 36, 4); // the form/page
+    rr(2, 4, 36, 36, 4, p.enemy); // the form/page
     g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(8, 10, 24, 3);
-    g.fillRect(8, 30, 24, 3); // form lines
-    g.lineStyle(4, p.projectile, 0.9);
+    g.fillRect(8, 9, 24, 3);
+    g.fillRect(8, 34, 24, 3); // form lines
+    // the eternal spinner
+    g.lineStyle(4, p.enemyAccent, 0.4);
+    g.strokeCircle(20, 22, 8);
+    g.lineStyle(4, p.projectile, 0.95);
     g.beginPath();
-    g.arc(20, 22, 8, 0, Math.PI * 1.4);
-    g.strokePath(); // the eternal spinner
-  });
-
-  // MailThief (#23) — a hooded figure clutching an envelope.
-  gen('vox-mailthief', 30, 38, () => {
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRoundedRect(4, 8, 20, 28, 6);
-    g.fillStyle(p.enemy, 1);
-    g.fillCircle(14, 8, 6);
-    g.fillStyle(p.playerAccent, 0.95);
-    g.fillRect(18, 20, 10, 7); // your envelope
-    g.lineStyle(1, p.enemyAccent, 1);
-    g.lineBetween(18, 20, 23, 24);
-    g.lineBetween(28, 20, 23, 24);
-  });
-
-  // Spammer (#35) — a ringing phone.
-  gen('vox-spammer', 30, 38, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(6, 4, 18, 30, 4);
-    g.fillStyle(p.playerAccent, 0.9);
-    g.fillRect(9, 9, 12, 18); // screen
-    g.fillStyle(p.hurt, 0.9);
-    g.fillCircle(15, 30, 2);
+    g.arc(20, 22, 8, -1.4, Math.PI * 0.9, false);
+    g.strokePath();
     g.fillStyle(p.projectile, 1);
-    g.fillCircle(24, 6, 2);
-    g.fillCircle(27, 4, 1.5); // ring waves
+    g.fillTriangle(27, 18, 31, 20, 26, 24); // arrowhead
   });
 
-  // RunAround (#40) — a darting will-o'-the-wisp with an arrow.
+  // MailThief (#23) — a hooded figure making off with your envelope, shifty eyes glowing.
+  gen('vox-mailthief', 30, 38, () => {
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(7, 35, 5, 3, 1);
+    g.fillRoundedRect(15, 35, 5, 3, 1);
+    rr(4, 8, 20, 27, 6, p.enemyAccent); // hooded cloak
+    g.fillStyle(p.enemy, 1);
+    g.fillTriangle(4, 14, 24, 14, 14, 3); // hood peak
+    g.fillStyle(p.ink, 1);
+    g.fillEllipse(14, 11, 12, 7); // shadowed face
+    fillC(11, 11, 1.4, p.hurt); // glowing shifty eyes
+    fillC(17, 11, 1.4, p.hurt);
+    // your envelope clutched under the arm
+    fillRR(18, 22, 11, 8, 1, p.playerAccent, 0.97);
+    g.lineStyle(1, p.ink, 0.8);
+    g.lineBetween(18, 22, 23.5, 27);
+    g.lineBetween(29, 22, 23.5, 27);
+  });
+
+  // Spammer (#35) — a phone blowing up with junk calls.
+  gen('vox-spammer', 30, 38, () => {
+    rr(5, 3, 20, 32, 4, p.enemy); // handset
+    fillRR(8, 8, 14, 18, 1, p.playerAccent, 0.92); // screen
+    fillC(15, 31, 2, p.enemyAccent); // home button
+    // incoming red call banner
+    fillRR(8, 11, 14, 5, 1, p.hurt);
+    fillC(15, 20, 3, p.hurt); // call glyph
+    // ring waves
+    g.lineStyle(2, p.projectile, 0.8);
+    g.strokeCircle(24, 5, 4);
+    g.strokeCircle(24, 5, 8);
+  });
+
+  // RunAround (#40) — a darting wisp with a lying arrow that sends you the wrong way.
   gen('vox-runaround', 30, 30, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillCircle(15, 15, 11);
-    g.fillStyle(p.projectile, 0.95);
-    g.fillTriangle(9, 15, 18, 9, 18, 21); // a misleading arrow
-    g.fillRect(16, 13, 6, 4);
+    circ(15, 15, 11, p.enemy);
+    // a misleading arrow
+    g.fillStyle(p.projectile, 0.97);
+    g.fillTriangle(7, 15, 15, 9, 15, 21);
+    g.fillRect(14, 13, 8, 4);
+    // shifty little eyes above the arrow
+    fillC(12, 8, 1.4, p.playerAccent);
+    fillC(18, 8, 1.4, p.playerAccent);
   });
 
-  // Clunker (#42) — a sputtering junk car.
+  // Clunker (#42) — a sputtering junk car, backfiring smoke, one headlight out.
   gen('vox-clunker', 52, 30, () => {
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRoundedRect(2, 12, 48, 14, 4);
-    g.fillRoundedRect(12, 4, 26, 12, 4);
-    g.fillStyle(p.enemy, 1);
-    g.fillRect(16, 7, 18, 7);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(14, 27, 4);
-    g.fillCircle(38, 27, 4);
-    g.fillStyle(p.hurt, 0.8);
-    g.fillCircle(2, 10, 3); // a puff of backfire smoke
+    g.fillStyle(p.ink, 1);
+    g.fillCircle(14, 27, 4.5);
+    g.fillCircle(38, 27, 4.5);
+    rr(2, 12, 48, 14, 4, p.enemyAccent);
+    rr(12, 4, 26, 11, 4, p.enemyAccent);
+    fillRR(15, 6, 20, 7, 1, p.enemy, 0.7); // window
+    // backfire smoke puffs
+    fillC(1, 10, 3, p.enemyAccent, 0.7);
+    fillC(4, 6, 2, p.enemyAccent, 0.5);
+    fillC(48, 14, 2, p.hurt); // one working taillight
   });
 
-  // Vanisher (#43) — a box flickering out of existence.
+  // Vanisher (#43) — a parcel flickering out of existence just as you reach it.
   gen('vox-vanisher', 30, 30, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRect(4, 8, 22, 18); // a parcel
-    g.lineStyle(2, p.enemyAccent, 1);
-    g.lineBetween(4, 14, 26, 14);
-    g.lineBetween(15, 8, 15, 26);
-    g.fillStyle(p.projectile, 0.6);
-    g.fillCircle(24, 8, 3); // a fading sparkle
+    // dashed ghost outline of where it used to be
+    g.lineStyle(1.5, p.enemyAccent, 0.5);
+    g.strokeRect(4, 8, 22, 18);
+    fillRR(6, 9, 18, 16, 1, p.enemy, 0.6); // half-faded box
+    g.lineStyle(1.5, p.enemyAccent, 0.8);
+    g.lineBetween(6, 15, 24, 15);
+    g.lineBetween(15, 9, 15, 25); // tape cross
+    // sparkles of dematerialization
+    fillC(24, 7, 2, p.projectile, 0.9);
+    fillC(27, 12, 1.2, p.projectile, 0.7);
+    fillC(22, 4, 1, p.projectile, 0.6);
   });
 
-  // Locker (#51) — a padlock on your account.
+  // Locker (#51) — a padlock slapped on your own account.
   gen('vox-locker', 40, 44, () => {
     g.lineStyle(6, p.enemyAccent, 1);
     g.beginPath();
-    g.arc(20, 16, 10, Math.PI, 0);
-    g.strokePath(); // shackle
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(6, 16, 28, 24, 4); // body
+    g.arc(20, 17, 9, Math.PI, 0, false); // shackle
+    g.strokePath();
+    rr(6, 16, 28, 24, 5, p.enemy); // body
+    fillC(20, 26, 3.5, p.projectile); // keyhole
     g.fillStyle(p.projectile, 1);
-    g.fillCircle(20, 26, 3);
-    g.fillRect(19, 26, 2, 8); // keyhole
+    g.fillTriangle(18, 28, 22, 28, 21, 35);
+    g.lineStyle(1.2, p.ink, 1);
+    g.strokeCircle(20, 26, 3.5);
   });
 
   // Spam-call projectile (#35).
   gen('vox-call', 20, 20, () => {
-    g.fillStyle(p.hurt, 0.9);
-    g.fillCircle(10, 10, 8);
-    g.fillStyle(p.playerAccent, 0.95);
+    circ(10, 10, 8, p.hurt);
     // a little handset glyph
-    g.fillRoundedRect(6, 6, 8, 8, 2);
-    g.fillStyle(p.hurt, 0.9);
-    g.fillRect(8, 8, 4, 4);
+    g.lineStyle(3, p.playerAccent, 0.97);
+    g.beginPath();
+    g.arc(10, 10, 4, 0.4, Math.PI * 1.1, false);
+    g.strokePath();
   });
 
-  // Specterrise — the boss. A server-stack ghost bristling with antennae.
+  // Specterrise — the boss. A server-rack ghost bristling with blinking slots + antennae.
   gen('vox-boss6', 96, 112, () => {
-    g.fillStyle(p.boss, 1);
-    g.fillEllipse(48, 46, 86, 82);
-    g.fillTriangle(8, 76, 26, 76, 17, 104);
-    g.fillTriangle(30, 80, 48, 80, 39, 108);
-    g.fillTriangle(52, 80, 70, 80, 61, 108);
-    g.fillTriangle(72, 76, 90, 76, 81, 104);
-    g.fillStyle(p.bossAccent, 1);
-    g.fillRect(20, 30, 56, 6);
-    g.fillRect(20, 44, 56, 6);
-    g.fillRect(20, 58, 56, 6); // server slots
-    g.fillStyle(p.projectile, 1);
-    g.fillCircle(28, 33, 2);
-    g.fillCircle(28, 47, 2);
-    g.fillCircle(28, 61, 2); // blinking lights
-    g.fillStyle(p.playerAccent, 1);
-    g.fillCircle(60, 33, 2);
-    g.fillCircle(68, 47, 2);
+    drawGhost(96, 112, p.boss, (cx) => {
+      // antennae
+      g.lineStyle(2, p.ink, 1);
+      g.lineBetween(cx - 16, 12, cx - 22, 0);
+      g.lineBetween(cx + 16, 12, cx + 22, 0);
+      fillC(cx - 22, 0, 2.5, p.projectile);
+      fillC(cx + 22, 0, 2.5, p.hurt);
+      // stacked server slots with lights
+      for (let i = 0; i < 3; i++) {
+        const y = 32 + i * 14;
+        fillRR(cx - 28, y, 56, 10, 2, p.bossAccent);
+        inkRR(cx - 28, y, 56, 10, 2, 1.2);
+        fillC(cx - 22, y + 5, 2, i === 1 ? p.hurt : p.projectile);
+        fillC(cx - 15, y + 5, 2, p.playerAccent);
+        g.fillStyle(p.ink, 0.5);
+        g.fillRect(cx + 4, y + 3, 18, 4); // vents
+      }
+      // a flat digital scowl
+      g.lineStyle(2.5, p.ink, 1);
+      g.lineBetween(cx - 10, 78, cx + 10, 78);
+    });
   });
 
   // --- World 7: The Recruiters ---
 
-  // Pushy newcomer (#14) — arms out for a smothering hug.
+  // Pushy newcomer (#14) — arms flung wide for a smothering, unwanted hug.
   gen('vox-pushy', 32, 40, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(6, 10, 20, 28, 6);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(16, 8, 6);
-    g.fillRect(0, 16, 8, 4);
-    g.fillRect(24, 16, 8, 4); // outstretched arms
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 37, 5, 3, 1);
+    g.fillRoundedRect(18, 37, 5, 3, 1);
+    // outstretched grabbing arms
+    rr(0, 15, 9, 4, 2, p.enemy);
+    rr(23, 15, 9, 4, 2, p.enemy);
+    fillC(2, 17, 2.6, p.enemyAccent); // open hands
+    fillC(30, 17, 2.6, p.enemyAccent);
+    rr(7, 10, 18, 27, 6, p.enemy); // body
+    circ(16, 8, 6, p.enemyAccent); // head
+    fillC(13, 8, 1.3, p.ink);
+    fillC(19, 8, 1.3, p.ink);
+    g.lineStyle(1.5, p.ink, 1);
+    g.beginPath();
+    g.arc(16, 9, 4, 0.1, Math.PI - 0.1, false); // pushy grin
+    g.strokePath();
   });
 
-  // Knower (#15) — a wide staring eye with a knowing brow.
+  // Knower (#15) — a smug all-knowing eye with a raised, condescending brow.
   gen('vox-knower', 32, 28, () => {
     g.fillStyle(p.enemy, 1);
-    g.fillEllipse(16, 15, 28, 20);
-    g.fillStyle(p.playerAccent, 1);
-    g.fillCircle(16, 15, 7);
-    g.fillStyle(p.bossAccent, 1);
-    g.fillCircle(16, 15, 3);
-    g.lineStyle(2, p.enemyAccent, 1);
-    g.lineBetween(4, 5, 14, 9); // a raised brow
+    g.fillEllipse(16, 16, 28, 20);
+    g.lineStyle(INK, p.ink, 1);
+    g.strokeEllipse(16, 16, 28, 20);
+    fillC(16, 16, 7, p.playerAccent);
+    fillC(16, 16, 3.2, p.bossAccent);
+    fillC(14.5, 14.5, 1.2, p.playerAccent); // glint
+    // a raised knowing brow
+    g.lineStyle(2.5, p.enemyAccent, 1);
+    g.beginPath();
+    g.moveTo(4, 6);
+    g.lineTo(16, 3);
+    g.lineTo(27, 7);
+    g.strokePath();
   });
 
-  // Lodge (#19) — a members hall with an all-seeing symbol.
+  // Lodge (#19) — a members' hall crowned with an all-seeing eye-in-triangle.
   gen('vox-lodge', 52, 48, () => {
+    rr(4, 16, 44, 30, 2, p.enemyAccent); // hall
+    // columns
+    g.fillStyle(p.ink, 0.25);
+    for (const x of [9, 20, 31, 42]) g.fillRect(x, 20, 3, 26);
     g.fillStyle(p.enemyAccent, 1);
-    g.fillRect(4, 16, 44, 30); // hall
-    g.fillTriangle(2, 16, 50, 16, 26, 2); // pediment
-    g.fillStyle(p.projectile, 0.9);
-    g.fillTriangle(26, 22, 20, 34, 32, 34); // eye triangle
-    g.fillStyle(p.bossAccent, 1);
-    g.fillCircle(26, 30, 2);
+    g.fillTriangle(1, 17, 51, 17, 26, 2); // pediment
+    g.lineStyle(1.5, p.ink, 1);
+    g.strokeTriangle(1, 17, 51, 17, 26, 2);
+    // all-seeing eye
+    g.lineStyle(1.5, p.projectile, 0.95);
+    g.strokeTriangle(26, 20, 19, 33, 33, 33);
+    fillC(26, 29, 3, p.projectile);
+    fillC(26, 29, 1.3, p.ink);
   });
 
-  // Baiter (#25) — holds out a shiny lure on a stick.
+  // Baiter (#25) — dangles a shiny lure on a rod, all charm.
   gen('vox-baiter', 32, 40, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(4, 10, 18, 28, 6);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(13, 8, 6);
-    g.lineStyle(2, p.enemyAccent, 1);
-    g.lineBetween(20, 16, 30, 10); // fishing rod
-    g.fillStyle(p.projectile, 1);
-    g.fillCircle(30, 9, 3); // the lure
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(7, 37, 5, 3, 1);
+    g.fillRoundedRect(14, 37, 5, 3, 1);
+    rr(4, 10, 17, 27, 6, p.enemy); // body
+    circ(12, 8, 6, p.enemyAccent); // head
+    fillC(10, 8, 1.2, p.ink);
+    fillC(15, 8, 1.2, p.ink);
+    g.lineStyle(1.4, p.ink, 1);
+    g.beginPath();
+    g.arc(12, 9, 3, 0.2, Math.PI - 0.2, false); // charming smile
+    g.strokePath();
+    // the rod + dangling lure
+    g.lineStyle(1.5, p.enemyAccent, 1);
+    g.lineBetween(18, 16, 30, 6);
+    g.lineBetween(30, 6, 30, 12);
+    fillC(30, 14, 3, p.projectile); // the shiny lure
+    fillC(29, 13, 1, p.shine);
   });
 
-  // Proposition (#26) — a leaning, leering figure (abstract).
+  // Proposition (#26) — a leaning, leering figure crowding your space.
   gen('vox-proposition', 32, 40, () => {
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(10, 37, 6, 3, 1);
+    g.fillRoundedRect(18, 37, 6, 3, 1);
+    // leaning torso (sheared to one side)
     g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(6, 8, 20, 30, 7);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(16, 8, 6);
-    g.fillStyle(p.hurt, 0.8);
-    g.fillRect(11, 18, 10, 3); // a leering grin
+    g.fillRoundedRect(8, 8, 20, 30, 7);
+    g.lineStyle(INK, p.ink, 1);
+    g.strokeRoundedRect(8, 8, 20, 30, 7);
+    circ(20, 8, 6, p.enemyAccent); // head, tilted forward
+    fillC(18, 8, 1.3, p.ink);
+    fillC(23, 8, 1.3, p.ink);
+    g.lineStyle(1.5, p.hurt, 0.9);
+    g.beginPath();
+    g.arc(20, 10, 4, 0, Math.PI - 0.4, false); // a leering grin
+    g.strokePath();
+    // an arm draped out, invading space
+    rr(24, 18, 8, 4, 2, p.enemy);
   });
 
-  // Secret-keeper (#33) — a cloaked figure with a finger to its lips.
+  // Secret-keeper (#33) — a cloaked figure, finger to its lips, hoarding your info.
   gen('vox-secret', 32, 40, () => {
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillRoundedRect(5, 8, 22, 30, 8); // cloak
+    rr(5, 9, 22, 29, 9, p.enemyAccent); // cloak
     g.fillStyle(p.enemy, 1);
-    g.fillCircle(16, 9, 6);
-    g.fillStyle(p.playerAccent, 0.9);
-    g.fillRect(15, 10, 2, 8); // shhh finger
+    g.fillTriangle(5, 18, 27, 18, 16, 6); // hood
+    g.fillStyle(p.ink, 1);
+    g.fillEllipse(16, 12, 12, 8); // shadowed face
+    fillC(13, 11, 1.3, p.playerAccent);
+    fillC(19, 11, 1.3, p.playerAccent);
+    // "shhh" finger over the lips
+    g.lineStyle(2.5, p.playerAccent, 0.95);
+    g.lineBetween(16, 9, 16, 17);
   });
 
-  // Fake friend (#37) — wears VOX's own colors to seem safe.
+  // Fake friend (#37) — wears VOX's own teal and visor to seem safe.
   gen('vox-fakefriend', 32, 40, () => {
-    g.fillStyle(p.player, 1); // friendly teal, just like you
-    g.fillRoundedRect(4, 4, 24, 34, 7);
-    g.fillStyle(p.playerAccent, 1);
-    g.fillRect(8, 11, 18, 5);
-    g.fillStyle(p.projectile, 1);
-    g.fillCircle(16, 26, 3); // a too-wide smile pin
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 36, 6, 4, 1);
+    g.fillRoundedRect(18, 36, 6, 4, 1);
+    rr(6, 15, 20, 15, 6, p.player); // friendly teal, just like you
+    rr(9, 4, 14, 12, 5, p.player);
+    fillRR(11, 8, 12, 4, 2, p.playerAccent); // a copied visor
+    // a too-wide, too-eager smile pin
+    fillC(16, 25, 3, p.projectile);
+    g.lineStyle(1, p.ink, 1);
+    g.strokeCircle(16, 25, 3);
+    // arms open, welcoming
+    rr(4, 17, 4, 9, 2, p.player);
+    rr(24, 17, 4, 9, 2, p.player);
   });
 
-  // Fake friend, revealed (#37) — the mask drops to the enemy palette.
+  // Fake friend, revealed (#37) — the mask drops to hostile enemy colors and a sharp grin.
   gen('vox-fakefriend-real', 32, 40, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(4, 4, 24, 34, 7);
-    g.fillStyle(p.hurt, 1);
-    g.fillRect(8, 11, 18, 5); // a hostile glare
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillTriangle(10, 30, 16, 24, 22, 30); // a sharp grin
-  });
-
-  // Forced family (#49) — a bulky figure barging in.
-  gen('vox-family', 34, 40, () => {
-    g.fillStyle(p.enemy, 1);
-    g.fillRoundedRect(3, 8, 28, 30, 6);
-    g.fillStyle(p.enemyAccent, 1);
-    g.fillCircle(17, 8, 7);
-    g.fillRect(3, 20, 28, 4); // arms crossed, pushing in
-  });
-
-  // Lure (#25 hazard) — a shiny trap on the ground.
-  gen('vox-lure', 22, 18, () => {
-    g.fillStyle(p.projectile, 0.95);
-    g.fillCircle(11, 11, 7);
-    g.fillStyle(p.hurt, 0.9);
-    g.fillCircle(11, 11, 3); // the hook inside the shine
-    g.fillStyle(p.playerAccent, 0.9);
-    g.fillCircle(8, 8, 1.5);
-  });
-
-  // The Recruiters — the final boss. A many-masked ghost, faces all around.
-  gen('vox-boss7', 100, 112, () => {
-    g.fillStyle(p.boss, 1);
-    g.fillEllipse(50, 46, 92, 82);
-    g.fillTriangle(10, 76, 28, 76, 19, 104);
-    g.fillTriangle(34, 80, 52, 80, 43, 108);
-    g.fillTriangle(56, 80, 74, 80, 65, 108);
-    g.fillTriangle(76, 76, 94, 76, 85, 104);
-    // A ring of little masks — all the fake faces it wears
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 36, 6, 4, 1);
+    g.fillRoundedRect(18, 36, 6, 4, 1);
+    rr(6, 15, 20, 15, 6, p.enemy);
+    rr(9, 4, 14, 12, 5, p.enemy);
+    fillRR(11, 8, 12, 3, 1, p.hurt); // a hostile glare
+    // a jagged sharp grin
     g.fillStyle(p.playerAccent, 1);
-    const faces: [number, number][] = [[32, 34], [68, 34], [24, 54], [76, 54], [50, 30]];
-    for (const [fx, fy] of faces) g.fillCircle(fx, fy, 7);
-    g.fillStyle(p.bossAccent, 1);
-    for (const [fx, fy] of faces) g.fillCircle(fx, fy, 3);
-    g.fillStyle(p.projectile, 1);
-    g.fillCircle(50, 62, 5); // a recruiter's pin
+    g.fillTriangle(10, 24, 14, 20, 14, 24);
+    g.fillTriangle(14, 24, 18, 20, 18, 24);
+    g.fillTriangle(18, 24, 22, 20, 22, 24);
+    rr(4, 17, 4, 9, 2, p.enemy);
+    rr(24, 17, 4, 9, 2, p.enemy);
+  });
+
+  // Forced family (#49) — a bulky figure barging in with crossed arms.
+  gen('vox-family', 34, 40, () => {
+    g.fillStyle(p.ink, 1);
+    g.fillRoundedRect(9, 37, 6, 3, 1);
+    g.fillRoundedRect(19, 37, 6, 3, 1);
+    rr(3, 9, 28, 28, 6, p.enemy); // bulky body
+    circ(17, 8, 7, p.enemyAccent); // head
+    fillC(14, 8, 1.4, p.ink);
+    fillC(20, 8, 1.4, p.ink);
+    g.lineStyle(1.5, p.ink, 1);
+    g.lineBetween(14, 12, 20, 12); // flat imposing mouth
+    // crossed arms bar
+    rr(5, 20, 24, 6, 3, p.enemyAccent);
+    g.lineStyle(1.5, p.ink, 1);
+    g.lineBetween(17, 20, 12, 26);
+    g.lineBetween(17, 20, 22, 26);
+  });
+
+  // Lure (#25 hazard) — a shiny coin-trap with a hook hidden in the gleam.
+  gen('vox-lure', 22, 18, () => {
+    circ(11, 10, 7, p.projectile);
+    fillC(8, 7, 1.8, p.shine, 0.9); // gleam
+    // the hook barb inside
+    g.lineStyle(2, p.hurt, 0.95);
+    g.beginPath();
+    g.arc(11, 9, 3, 0, Math.PI, false);
+    g.strokePath();
+    g.lineBetween(14, 9, 14, 13);
+    g.lineBetween(14, 13, 12, 12);
+  });
+
+  // The Recruiters — the final boss. A ghost ringed with swappable masks (its fake faces),
+  // a recruiter's pin at the heart. The most elaborate boss silhouette.
+  gen('vox-boss7', 100, 112, () => {
+    drawGhost(100, 112, p.boss, (cx) => {
+      // ring of little masks — all the faces it wears
+      const faces: [number, number][] = [
+        [cx - 18, 34],
+        [cx + 18, 34],
+        [cx - 26, 54],
+        [cx + 26, 54],
+        [cx, 28],
+      ];
+      for (const [fx, fy] of faces) {
+        circ(fx, fy, 7, p.playerAccent);
+        fillC(fx - 2, fy, 1.4, p.ink);
+        fillC(fx + 2, fy, 1.4, p.ink);
+        g.lineStyle(1, p.ink, 1);
+        g.beginPath();
+        g.arc(fx, fy + 1, 2.5, 0.2, Math.PI - 0.2, false); // each mask smiles
+        g.strokePath();
+      }
+      // the central recruiter's pin
+      fillC(cx, 62, 6, p.projectile);
+      g.lineStyle(2, p.ink, 1);
+      g.strokeCircle(cx, 62, 6);
+      // radiating "join us" lines
+      g.lineStyle(1.5, p.bossAccent, 0.5);
+      for (const a of [-2.4, -0.7, 0.7, 2.4]) {
+        g.lineBetween(cx + Math.cos(a) * 40, 46 + Math.sin(a) * 34, cx + Math.cos(a) * 50, 46 + Math.sin(a) * 42);
+      }
+    });
   });
 
   g.destroy();
