@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { SpecterforceBoss } from '../../entities/Boss3';
 import type { BossBase } from '../../entities/BossBase';
 import { Detector, LoopGenerator, Shadow, Siren, type World3Host } from '../../entities/enemies3';
+import { buildPrecinctBackdrop } from '../../systems/backdrops';
 import { cue } from '../../systems/sound';
 import { BaseWorldScene, GROUND_Y } from './BaseWorldScene';
 
@@ -22,6 +23,10 @@ export class World3Scene extends BaseWorldScene implements World3Host {
 
   constructor() {
     super('world3');
+  }
+
+  protected override buildBackdrop(): void {
+    buildPrecinctBackdrop(this, this.worldWidth);
   }
 
   protected buildWorld(): void {

@@ -20,6 +20,7 @@ import {
   WindowLight,
   type World4Host,
 } from '../../entities/enemies4';
+import { buildCuldesacBackdrop } from '../../systems/backdrops';
 import { BaseWorldScene, GROUND_Y } from './BaseWorldScene';
 
 export class World4Scene extends BaseWorldScene implements World4Host {
@@ -35,6 +36,10 @@ export class World4Scene extends BaseWorldScene implements World4Host {
 
   constructor() {
     super('world4');
+  }
+
+  protected override buildBackdrop(): void {
+    buildCuldesacBackdrop(this, this.worldWidth);
   }
 
   protected buildWorld(): void {
