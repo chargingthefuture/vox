@@ -1,5 +1,11 @@
 import Phaser from 'phaser';
+import { registerSW } from 'virtual:pwa-register';
 import { enterFullscreen } from './systems/fullscreen';
+
+// Precache the game for offline play and keep it current: `autoUpdate` reloads the page
+// once a newly deployed worker activates, so players always get the latest without ever
+// clearing a cache — and can still play with no network after the first visit.
+registerSW({ immediate: true });
 import * as savecode from './systems/savecode';
 import { TitleScene } from './scenes/TitleScene';
 import { UIScene } from './scenes/UIScene';
