@@ -5,6 +5,7 @@ import Phaser from 'phaser';
 import { SpecterbaneBoss } from '../../entities/Boss5';
 import type { BossBase } from '../../entities/BossBase';
 import { Beamer, Drainer, FalseDoctor, Ringer, Striker, type World5Host } from '../../entities/enemies5';
+import { buildClinicBackdrop } from '../../systems/backdrops';
 import { BaseWorldScene, GROUND_Y } from './BaseWorldScene';
 
 export class World5Scene extends BaseWorldScene implements World5Host {
@@ -19,6 +20,10 @@ export class World5Scene extends BaseWorldScene implements World5Host {
 
   constructor() {
     super('world5');
+  }
+
+  protected override buildBackdrop(): void {
+    buildClinicBackdrop(this, this.worldWidth);
   }
 
   protected buildWorld(): void {

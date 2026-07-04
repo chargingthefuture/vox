@@ -15,6 +15,7 @@ import {
   SecretKeeper,
   type World7Host,
 } from '../../entities/enemies7';
+import { buildLodgeBackdrop } from '../../systems/backdrops';
 import { BaseWorldScene, GROUND_Y } from './BaseWorldScene';
 
 export class World7Scene extends BaseWorldScene implements World7Host {
@@ -29,6 +30,10 @@ export class World7Scene extends BaseWorldScene implements World7Host {
 
   constructor() {
     super('world7');
+  }
+
+  protected override buildBackdrop(): void {
+    buildLodgeBackdrop(this, this.worldWidth);
   }
 
   protected buildWorld(): void {

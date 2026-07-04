@@ -14,6 +14,7 @@ import {
   Vanisher,
   type World6Host,
 } from '../../entities/enemies6';
+import { buildServerBackdrop } from '../../systems/backdrops';
 import { BaseWorldScene, GROUND_Y } from './BaseWorldScene';
 
 export class World6Scene extends BaseWorldScene implements World6Host {
@@ -28,6 +29,10 @@ export class World6Scene extends BaseWorldScene implements World6Host {
 
   constructor() {
     super('world6');
+  }
+
+  protected override buildBackdrop(): void {
+    buildServerBackdrop(this, this.worldWidth);
   }
 
   protected buildWorld(): void {

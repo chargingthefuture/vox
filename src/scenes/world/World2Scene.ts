@@ -9,6 +9,7 @@ import type { BossBase } from '../../entities/BossBase';
 import { Accuser, Clerk, Gatekeeper, Recorder, Slanderer, type World2Host } from '../../entities/enemies2';
 import type { Player } from '../../entities/Player';
 import { LieBubble } from '../../entities/projectiles';
+import { buildOfficeBackdrop } from '../../systems/backdrops';
 import { EVENTS } from '../../systems/events';
 import { BaseWorldScene, GROUND_Y } from './BaseWorldScene';
 
@@ -28,6 +29,10 @@ export class World2Scene extends BaseWorldScene implements World2Host {
 
   constructor() {
     super('world2');
+  }
+
+  protected override buildBackdrop(): void {
+    buildOfficeBackdrop(this, this.worldWidth);
   }
 
   protected buildWorld(): void {
