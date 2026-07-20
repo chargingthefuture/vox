@@ -9,14 +9,24 @@ import { headingStyle, textShadow } from '../systems/fx';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { virtualPress, virtualRelease } from '../systems/input';
 import { pal } from '../systems/palette';
-import { progress, saveProgress, settings, type BindableAction } from '../systems/settings';
+import { progress, saveProgress, settings, motionReduced, type BindableAction } from '../systems/settings';
 import { onCaption } from '../systems/sound';
+import {
+  addScanlines,
+  drawPixelMatrix,
+  drawPixelPanel,
+  drawSegmentMeter,
+  HEART_EMPTY,
+  HEART_FULL,
+  MONO_FONT,
+  PIXEL_FONT,
+} from '../systems/uikit';
 
 const W = 960;
 const H = 540;
 
 export class UIScene extends Phaser.Scene {
-  private hearts!: Phaser.GameObjects.Text;
+  private hearts!: Phaser.GameObjects.Graphics;
   private bossBar!: Phaser.GameObjects.Graphics;
   private bossLabel!: Phaser.GameObjects.Text;
   private captionText!: Phaser.GameObjects.Text;
@@ -42,15 +52,15 @@ export class UIScene extends Phaser.Scene {
     this.cardQueue = [];
     this.cardShowing = false;
 
-    this.hearts = textShadow(
-      this.add.text(16, 12, '', { fontFamily: 'monospace', fontSize: '24px', color: p.uiText }).setDepth(100),
-    );
+    // HP as blocky pixel hearts, drawn per-pixel from the spec matrices.
+    this.hearts = this.add.graphics().setDepth(100);
 
+    // Chrome labels use the pixel font; small size keeps them crisp and unobtrusive.
     this.worldLabel = textShadow(
       this.add
-        .text(W / 2, 14, '', {
-          fontFamily: 'monospace',
-          fontSize: '15px',
+        .text(W / 2, 12, '', {
+          fontFamily: PIXEL_FONT,
+          fontSize: '10px',
           color: p.uiDim,
         })
         .setOrigin(0.5, 0)
@@ -59,24 +69,28 @@ export class UIScene extends Phaser.Scene {
 
     this.repBar = this.add.graphics().setDepth(100);
     this.repLabel = this.add
-      .text(16, 42, '', { fontFamily: 'monospace', fontSize: '11px', color: p.uiDim })
+      .text(16, 40, '', { fontFamily: PIXEL_FONT, fontSize: '8px', color: p.uiDim })
       .setDepth(100);
 
     this.bossBar = this.add.graphics().setDepth(100);
     this.bossLabel = textShadow(
       this.add
-        .text(W / 2, 46, '', { fontFamily: 'monospace', fontSize: '13px', color: p.uiText })
+        .text(W / 2, 46, '', { fontFamily: PIXEL_FONT, fontSize: '9px', color: p.uiText })
         .setOrigin(0.5, 0)
         .setDepth(100)
         .setVisible(false),
     );
 
+    // Captions are short prose — keep them in readable monospace.
     this.captionText = textShadow(
       this.add
-        .text(W - 14, H - 12, '', { fontFamily: 'monospace', fontSize: '14px', color: p.uiDim })
+        .text(W - 14, H - 12, '', { fontFamily: MONO_FONT, fontSize: '14px', color: p.uiDim })
         .setOrigin(1, 1)
         .setDepth(100),
     );
+
+    // CRT scanline overlay, gated off for calm mode / reduced motion.
+    addScanlines(this, settings.calmMode || motionReduced());
 
     onCaption((text) => this.showCaption(text));
 
@@ -110,12 +124,20 @@ export class UIScene extends Phaser.Scene {
   private onReputation(value: number): void {
     const p = pal();
     this.repBar.clear();
-    const w = 120;
-    this.repLabel.setText('reputation');
-    this.repBar.fillStyle(p.uiCard, 0.9).fillRoundedRect(16, 56, w, 8, 3);
-    this.repBar
-      .fillStyle(Phaser.Display.Color.HexStringToColor(p.uiAccent).color, 1)
-      .fillRoundedRect(17, 57, Math.max(3, (w - 2) * (value / 100)), 6, 2);
+    this.repLabel.setText('VOICE');
+    // 10 hard-edged segments; lit count tracks the value. No gradient, no rounded corners.
+    const count = 10;
+    const filled = Math.round((value / 100) * count);
+    drawSegmentMeter(this.repBar, 18, 54, {
+      segW: 10,
+      segH: 12,
+      gap: 3,
+      count,
+      filled,
+      lit: Phaser.Display.Color.HexStringToColor(p.uiAccent).color,
+      empty: 0x2a2a4a,
+      ink: p.ink,
+    });
   }
 
   // On-screen buttons for phones/tablets: move on the left, jump + attack on the right.
@@ -169,7 +191,23 @@ export class UIScene extends Phaser.Scene {
   }
 
   private onHp(hp: number, max: number): void {
-    this.hearts.setText('♥'.repeat(hp) + '·'.repeat(Math.max(0, max - hp)));
+    const p = pal();
+    const cell = 3; // px per heart-pixel
+    const hw = 5 * cell; // heart matrix is 5 cols wide
+    const gap = 8;
+    this.hearts.clear();
+    for (let i = 0; i < max; i++) {
+      const ox = 16 + i * (hw + gap);
+      const filled = i < hp;
+      drawPixelMatrix(
+        this.hearts,
+        filled ? HEART_FULL : HEART_EMPTY,
+        { X: filled ? p.hurt : 0x444466 },
+        cell,
+        ox,
+        12,
+      );
+    }
   }
 
   private onRespawn(): void {
@@ -184,11 +222,11 @@ export class UIScene extends Phaser.Scene {
     const w = 420;
     const x0 = W / 2 - w / 2;
     const accent = Phaser.Display.Color.HexStringToColor(p.uiAccent).color;
-    // A framed track with a soft outline, then the fill — reads as a real health bar.
-    this.bossBar.fillStyle(0x000000, 0.35).fillRoundedRect(x0 - 2, 30, w + 4, 14, 6);
-    this.bossBar.fillStyle(p.uiCard, 0.95).fillRoundedRect(x0, 32, w, 10, 4);
-    this.bossBar.fillStyle(accent, 1).fillRoundedRect(x0 + 2, 34, Math.max(4, (w - 4) * (hp / max)), 6, 3);
-    this.bossBar.lineStyle(1, accent, 0.5).strokeRoundedRect(x0, 32, w, 10, 4);
+    // Hard-edged health bar: black frame, muted track, flat red fill — no rounding, no blur.
+    this.bossBar.fillStyle(p.ink, 1).fillRect(x0 - 2, 30, w + 4, 14);
+    this.bossBar.fillStyle(0x2a2a4a, 1).fillRect(x0, 32, w, 10);
+    this.bossBar.fillStyle(p.hurt, 1).fillRect(x0, 32, Math.max(4, w * (hp / max)), 10);
+    this.bossBar.fillStyle(accent, 1).fillRect(x0, 32, Math.max(4, w * (hp / max)), 2); // cyan top edge
   }
 
   private showCaption(text: string): void {
@@ -228,25 +266,25 @@ export class UIScene extends Phaser.Scene {
 
     const card = this.add.container(W / 2, H + 60).setDepth(110);
     const accent = Phaser.Display.Color.HexStringToColor(p.uiAccent).color;
+    // Hard pixel panel: black frame, cyan ring, flat fill, offset drop-shadow.
     const bg = this.add.graphics();
-    bg.fillStyle(0x000000, 0.35).fillRoundedRect(-334, -42, 668, 92, 12); // drop shadow
-    bg.fillStyle(p.uiCard, 0.97).fillRoundedRect(-330, -44, 660, 88, 10);
-    bg.fillStyle(accent, 1).fillRoundedRect(-330, -44, 6, 88, 3); // accent spine
-    bg.lineStyle(2, accent, 0.8).strokeRoundedRect(-330, -44, 660, 88, 10);
+    drawPixelPanel(bg, -330, -44, 660, 88, { fill: p.uiCard, ring: accent, ink: p.ink });
     card.add(bg);
+    // Pixel-font kicker (short), then the payoff line in readable monospace.
     card.add(
       this.add
-        .text(0, -24, `Tactic defeated — ${problem.label}`, {
-          fontFamily: 'monospace',
-          fontSize: '17px',
+        .text(0, -26, `TACTIC DEFEATED — ${problem.label.toUpperCase()}`, {
+          fontFamily: PIXEL_FONT,
+          fontSize: '9px',
           color: p.uiAccent,
+          align: 'center',
         })
         .setOrigin(0.5),
     );
     card.add(
       this.add
-        .text(0, 0, `In real life: ${solutions} ${verb} with this.`, {
-          fontFamily: 'monospace',
+        .text(0, 2, `In real life: ${solutions} ${verb} with this.`, {
+          fontFamily: MONO_FONT,
           fontSize: '15px',
           color: p.uiText,
         })
@@ -254,7 +292,7 @@ export class UIScene extends Phaser.Scene {
     );
     card.add(
       this.add
-        .text(0, 26, 'any key to dismiss', { fontFamily: 'monospace', fontSize: '11px', color: p.uiDim })
+        .text(0, 28, 'any key to dismiss', { fontFamily: MONO_FONT, fontSize: '11px', color: p.uiDim })
         .setOrigin(0.5),
     );
 
@@ -303,9 +341,9 @@ export class UIScene extends Phaser.Scene {
     overlay.add(dim);
     const clearTitle = headingStyle(
       this.add
-        .text(W / 2, 64, `${world.name.toUpperCase()} — CLEARED`, {
-          fontFamily: 'monospace',
-          fontSize: '30px',
+        .text(W / 2, 60, `${world.name.toUpperCase()} — CLEARED`, {
+          fontFamily: PIXEL_FONT,
+          fontSize: '18px',
           color: p.uiAccent,
         })
         .setOrigin(0.5),

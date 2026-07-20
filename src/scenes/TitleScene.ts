@@ -3,7 +3,7 @@
 
 import Phaser from 'phaser';
 import { WORLDS } from '../data/worlds';
-import { addSceneFX, headingStyle, textShadow } from '../systems/fx';
+import { addSceneFX, textShadow } from '../systems/fx';
 import { gpConfirmPressed, sampleGamepad } from '../systems/gamepad';
 import { pal } from '../systems/palette';
 import {
@@ -19,9 +19,21 @@ import { toggleFullscreen } from '../systems/fullscreen';
 import { keyLabel } from '../systems/input';
 import { exportSaveCode, exportSaveJSON, importSave } from '../systems/savecode';
 import { ensureTextures } from '../systems/textures';
+import { addScanlines, drawPixelMatrix, drawPixelPanel, MONO_FONT, PIXEL_FONT } from '../systems/uikit';
 
 const W = 960;
 const H = 540;
+
+// Spec VOX logo matrix — rendered as pixel cells (canvas equivalent of the box-shadow sprite).
+const LOGO_MATRIX = [
+  'XXXXX   XXXXX    OOOOOOO    XXXXX   XXXXX',
+  'XXXXX   XXXXX  OOO     OOO   XXXXX XXXXX ',
+  ' XXXXX XXXXX   OOO     OOO    XXXXXXXX   ',
+  '  XXXXXXXXX    OOO     OOO     XXXXXX    ',
+  '   XXXXXXX     OOO     OOO    XXXXXXXX   ',
+  '    XXXXX      OOO     OOO   XXXXX XXXXX ',
+  '     XXX         OOOOOOO    XXXXX   XXXXX',
+];
 
 export class TitleScene extends Phaser.Scene {
   private overlayOpen = false;
@@ -53,18 +65,34 @@ export class TitleScene extends Phaser.Scene {
       this.add.rectangle(x, H - 110 - h / 2 + 40, 60 + ((x * 11) % 40), h, p.ground, 0.4).setDepth(-5);
     }
 
-    const logo = headingStyle(
-      this.add
-        .text(W / 2, 92, 'VOX', { fontFamily: 'monospace', fontSize: '96px', color: p.uiText, fontStyle: 'bold' })
-        .setOrigin(0.5),
-    );
+    // Pixel VOX logo: purple cells, black outline, cyan drop-shadow — the box-shadow sprite
+    // technique rendered onto a Graphics inside a container we can breathe.
+    const logo = this.add.container(W / 2, 96).setDepth(5);
+    const g = this.add.graphics();
+    const cell = 11;
+    const cols = LOGO_MATRIX[0].length;
+    const rows = LOGO_MATRIX.length;
+    const ox = -(cols * cell) / 2;
+    const oy = -(rows * cell) / 2;
+    const purple = 0x9b5de5;
+    const cyan = 0x00f5d4;
+    const black = 0x000000;
+    const both = (c: number, dx: number, dy: number): void =>
+      drawPixelMatrix(g, LOGO_MATRIX, { X: c, O: c }, cell, ox + dx, oy + dy);
+    both(cyan, 8, 8); // drop-shadow
+    both(black, 3, 0);
+    both(black, -3, 0);
+    both(black, 0, 3);
+    both(black, 0, -3); // black outline
+    both(purple, 0, 0); // face
+    logo.add(g);
     // A slow idle breath on the logo (skipped when motion is reduced).
     if (!motionReduced()) {
       this.tweens.add({ targets: logo, scale: 1.03, duration: 2200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     }
     textShadow(
       this.add
-        .text(W / 2, 158, 'take your voice back', { fontFamily: 'monospace', fontSize: '20px', color: p.uiAccent })
+        .text(W / 2, 160, 'TAKE YOUR VOICE BACK', { fontFamily: PIXEL_FONT, fontSize: '13px', color: p.uiAccent })
         .setOrigin(0.5),
     );
 
@@ -142,15 +170,15 @@ export class TitleScene extends Phaser.Scene {
     );
 
     // Fit the rows between the intro text (~220) and VOX at the bottom; tighten as rows grow.
-    const rowGap = menu.length > 7 ? 24 : 29;
-    const top = 242;
+    const rowGap = menu.length > 7 ? 27 : 31;
+    const top = 246;
     menu.forEach((item, i) => {
       const baseColor = item.locked ? p.uiDim : item.world ? p.uiText : p.uiDim;
       const t = textShadow(
         this.add
           .text(W / 2, top + i * rowGap, item.label(), {
-            fontFamily: 'monospace',
-            fontSize: item.world ? '17px' : '14px',
+            fontFamily: PIXEL_FONT,
+            fontSize: item.world ? '12px' : '9px',
             color: baseColor,
           })
           .setOrigin(0.5)
@@ -159,14 +187,9 @@ export class TitleScene extends Phaser.Scene {
       );
       if (!item.locked) {
         t.setInteractive({ useHandCursor: true });
-        t.on('pointerover', () => {
-          t.setColor(p.uiAccent);
-          this.tweens.add({ targets: t, scale: 1.06, duration: 120, ease: 'Quad.easeOut' });
-        });
-        t.on('pointerout', () => {
-          t.setColor(baseColor);
-          this.tweens.add({ targets: t, scale: 1, duration: 120, ease: 'Quad.easeOut' });
-        });
+        // Snap, don't slide — the pixel aesthetic wants hard state changes, no easing.
+        t.on('pointerover', () => t.setColor(p.uiAccent).setScale(1.08));
+        t.on('pointerout', () => t.setColor(baseColor).setScale(1));
         t.on('pointerdown', () => {
           if (this.overlayOpen) return;
           cue('ui');
@@ -190,6 +213,7 @@ export class TitleScene extends Phaser.Scene {
     });
 
     addSceneFX(this);
+    addScanlines(this, settings.calmMode || motionReduced());
     this.cameras.main.fadeIn(320, 0, 0, 0);
 
     this.input.keyboard?.on('keydown-ENTER', () => {
@@ -235,13 +259,13 @@ export class TitleScene extends Phaser.Scene {
     overlay.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.86));
     overlay.add(
       this.add
-        .text(W / 2, 60, 'Select a world', { fontFamily: 'monospace', fontSize: '24px', color: p.uiAccent })
+        .text(W / 2, 58, 'SELECT A WORLD', { fontFamily: PIXEL_FONT, fontSize: '16px', color: p.uiAccent })
         .setOrigin(0.5),
     );
     overlay.add(
       this.add
         .text(W / 2, 92, 'pick any world — cleared ones are marked ✓', {
-          fontFamily: 'monospace',
+          fontFamily: MONO_FONT,
           fontSize: '12px',
           color: p.uiDim,
         })
@@ -279,7 +303,7 @@ export class TitleScene extends Phaser.Scene {
     });
 
     const close = this.add
-      .text(W / 2, H - 34, '[ back ]', { fontFamily: 'monospace', fontSize: '16px', color: p.uiAccent })
+      .text(W / 2, H - 32, '[ BACK ]', { fontFamily: PIXEL_FONT, fontSize: '12px', color: p.uiAccent })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     close.on('pointerdown', () => {
@@ -299,7 +323,7 @@ export class TitleScene extends Phaser.Scene {
     overlay.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.92));
     overlay.add(
       this.add
-        .text(W / 2, 56, 'Save / load progress', { fontFamily: 'monospace', fontSize: '24px', color: p.uiAccent })
+        .text(W / 2, 54, 'SAVE / LOAD PROGRESS', { fontFamily: PIXEL_FONT, fontSize: '15px', color: p.uiAccent })
         .setOrigin(0.5),
     );
     overlay.add(
@@ -310,7 +334,7 @@ export class TitleScene extends Phaser.Scene {
           'Your progress is kept only in this browser. Copy your code or download a\n' +
             'backup to keep it — then paste or load it back after you clear your browser,\n' +
             'or to move to another device.',
-          { fontFamily: 'monospace', fontSize: '12px', color: p.uiDim, align: 'center', lineSpacing: 3 },
+          { fontFamily: MONO_FONT, fontSize: '12px', color: p.uiDim, align: 'center', lineSpacing: 3 },
         )
         .setOrigin(0.5),
     );
@@ -396,7 +420,7 @@ export class TitleScene extends Phaser.Scene {
     });
 
     const close = this.add
-      .text(W / 2, H - 34, '[ back ]', { fontFamily: 'monospace', fontSize: '16px', color: p.uiAccent })
+      .text(W / 2, H - 32, '[ BACK ]', { fontFamily: PIXEL_FONT, fontSize: '12px', color: p.uiAccent })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     close.on('pointerdown', () => {
@@ -415,11 +439,15 @@ export class TitleScene extends Phaser.Scene {
     const overlay = this.add.container(0, 0).setDepth(300);
     overlay.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.86));
     const panel = this.add.graphics();
-    panel.fillStyle(p.uiCard, 1).fillRoundedRect(W / 2 - 340, 70, 680, 400, 12);
+    drawPixelPanel(panel, W / 2 - 340, 70, 680, 400, {
+      fill: p.uiCard,
+      ring: Phaser.Display.Color.HexStringToColor(p.uiAccent).color,
+      ink: p.ink,
+    });
     overlay.add(panel);
     overlay.add(
       this.add
-        .text(W / 2, 104, 'Before you play', { fontFamily: 'monospace', fontSize: '24px', color: p.uiAccent })
+        .text(W / 2, 104, 'BEFORE YOU PLAY', { fontFamily: PIXEL_FONT, fontSize: '16px', color: p.uiAccent })
         .setOrigin(0.5),
     );
     overlay.add(
@@ -456,7 +484,7 @@ export class TitleScene extends Phaser.Scene {
     overlay.add(calmBtn);
 
     const playBtn = this.add
-      .text(W / 2, 420, '[ got it — play ]', { fontFamily: 'monospace', fontSize: '18px', color: p.uiAccent })
+      .text(W / 2, 420, '[ GOT IT — PLAY ]', { fontFamily: PIXEL_FONT, fontSize: '13px', color: p.uiAccent })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     const acceptNote = (): void => {
@@ -480,17 +508,21 @@ export class TitleScene extends Phaser.Scene {
     const overlay = this.add.container(0, 0).setDepth(300);
     overlay.add(this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.86));
     const panel = this.add.graphics();
-    panel.fillStyle(p.uiCard, 1).fillRoundedRect(W / 2 - 280, 90, 560, 360, 12);
+    drawPixelPanel(panel, W / 2 - 280, 90, 560, 360, {
+      fill: p.uiCard,
+      ring: Phaser.Display.Color.HexStringToColor(p.uiAccent).color,
+      ink: p.ink,
+    });
     overlay.add(panel);
     overlay.add(
       this.add
-        .text(W / 2, 122, 'Controls', { fontFamily: 'monospace', fontSize: '22px', color: p.uiAccent })
+        .text(W / 2, 122, 'CONTROLS', { fontFamily: PIXEL_FONT, fontSize: '15px', color: p.uiAccent })
         .setOrigin(0.5),
     );
     overlay.add(
       this.add
         .text(W / 2, 152, 'click an action, then press the key you want\n(WASD and X always work too · gamepad: stick/d-pad moves, bottom button jumps, other face buttons attack)', {
-          fontFamily: 'monospace',
+          fontFamily: MONO_FONT,
           fontSize: '12px',
           color: p.uiDim,
           align: 'center',
@@ -549,7 +581,7 @@ export class TitleScene extends Phaser.Scene {
     overlay.add(resetBtn);
 
     const closeBtn = this.add
-      .text(W / 2, 414, '[ done ]', { fontFamily: 'monospace', fontSize: '18px', color: p.uiAccent })
+      .text(W / 2, 414, '[ DONE ]', { fontFamily: PIXEL_FONT, fontSize: '13px', color: p.uiAccent })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     closeBtn.on('pointerdown', () => {

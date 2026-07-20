@@ -18,7 +18,7 @@ export default defineConfig({
       injectRegister: false, // registered explicitly in src/main.ts
       manifest: false, // we ship our own public/manifest.webmanifest
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff,woff2}'],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,

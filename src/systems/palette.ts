@@ -30,50 +30,54 @@ export interface Palette {
   shine: number;
 }
 
+// Pixel-UI palette (Dan-the-Man style): deep indigo ground, electric purple, cyan, red, gold,
+// and hard black ink on every outline.
 const NORMAL: Palette = {
-  sky: 0x11122b,
-  skyBottom: 0x2b1b3d,
-  ground: 0x2e2e4e,
-  platform: 0x44446e,
-  player: 0x35d0ba,
-  playerAccent: 0xf7f7ff,
-  enemy: 0x8f86c9,
-  enemyAccent: 0x5a5390,
-  boss: 0xb46ad0,
-  bossAccent: 0x7a3a95,
-  projectile: 0xffc857,
-  checkpoint: 0x5a5a7a,
-  checkpointLit: 0x7ce38b,
-  confetti: [0x7ce38b, 0x35d0ba, 0xffc857, 0xf7f7ff, 0xff8fa3],
-  uiText: '#f7f7ff',
-  uiDim: '#a8a8c8',
-  uiCard: 0x1c1c34,
-  uiAccent: '#7ce38b',
-  hurt: 0xff6b6b,
-  ink: 0x0c0c1a,
+  sky: 0x0d0b1e, // --bg-deep
+  skyBottom: 0x120f2b, // --bg-surface
+  ground: 0x120f2b,
+  platform: 0x9b5de5, // --purple
+  player: 0x00f5d4, // --cyan (hero body)
+  playerAccent: 0x9b5de5, // --purple (hero torso)
+  enemy: 0xff3355, // --red
+  enemyAccent: 0xb3243d,
+  boss: 0xffd60a, // --gold (villain suit)
+  bossAccent: 0xc79e00,
+  projectile: 0xffd60a,
+  checkpoint: 0x2a2a4a, // --muted
+  checkpointLit: 0x00f5d4,
+  confetti: [0x9b5de5, 0x00f5d4, 0xff3355, 0xffd60a, 0xffffff],
+  uiText: '#ffffff',
+  uiDim: '#a9b0d6',
+  uiCard: 0x0d0b1e,
+  uiAccent: '#00f5d4', // --cyan
+  hurt: 0xff3355,
+  ink: 0x000000, // hard black outlines — spec rule
   shine: 0xffffff,
 };
 
+// Calm mode: the same pixel palette desaturated — softer purples/cyans, no harsh brights,
+// slate ink instead of hard black. Same hue family so the identity carries across the switch.
 const CALM: Palette = {
-  sky: 0x2a3140,
-  skyBottom: 0x3a4152,
-  ground: 0x4a5163,
-  platform: 0x5d6478,
+  sky: 0x1a1830,
+  skyBottom: 0x232140,
+  ground: 0x232140,
+  platform: 0x8a7aa8,
   player: 0x8fc8bd,
-  playerAccent: 0xe8e8ee,
-  enemy: 0x9d97b8,
-  enemyAccent: 0x7d789a,
-  boss: 0xa88cba,
-  bossAccent: 0x8a7099,
-  projectile: 0xd8c28e,
-  checkpoint: 0x6d7488,
-  checkpointLit: 0x9dc4a4,
-  confetti: [0x9dc4a4, 0x8fc8bd, 0xd8c28e, 0xe8e8ee],
+  playerAccent: 0xa898c0,
+  enemy: 0xc98a95,
+  enemyAccent: 0x9a6b76,
+  boss: 0xd8c88e,
+  bossAccent: 0xac9c66,
+  projectile: 0xd8c88e,
+  checkpoint: 0x3a3a54,
+  checkpointLit: 0x9dc4c4,
+  confetti: [0xa898c0, 0x8fc8bd, 0xc98a95, 0xd8c88e],
   uiText: '#e8e8ee',
   uiDim: '#b0b4c4',
-  uiCard: 0x333a4a,
-  uiAccent: '#9dc4a4',
-  hurt: 0xc98a8a,
+  uiCard: 0x1a1830,
+  uiAccent: '#9dc4c4',
+  hurt: 0xc98a95,
   // Calm mode keeps outlines soft and low-contrast — a muted slate, never harsh black.
   ink: 0x2a3040,
   shine: 0xf0f2f6,
