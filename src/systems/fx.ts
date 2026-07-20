@@ -5,27 +5,28 @@
 
 import Phaser from 'phaser';
 import { pal } from './palette';
-import { motionReduced, settings } from './settings';
+import { motionReduced } from './settings';
 
-/** A soft drop shadow so text reads on busy backgrounds. */
-export function textShadow(t: Phaser.GameObjects.Text, blur = 6): Phaser.GameObjects.Text {
-  return t.setShadow(0, 3, '#000000', blur, false, true);
+/** A hard pixel drop-shadow so text reads on busy backgrounds — offset, no blur (the pixel
+ * aesthetic wants crisp edges, not soft halos). The `blur` arg is kept for call-site
+ * compatibility but ignored; shadows are always hard now. */
+export function textShadow(t: Phaser.GameObjects.Text, _blur = 0): Phaser.GameObjects.Text {
+  return t.setShadow(2, 2, '#000000', 0, false, true);
 }
 
-/** Heavier treatment for big headings: outline + shadow. */
+/** Heavier treatment for big headings: hard black outline + hard offset shadow. */
 export function headingStyle(t: Phaser.GameObjects.Text): Phaser.GameObjects.Text {
-  t.setStroke('#0a0a12', 6);
-  return t.setShadow(0, 5, '#000000', 10, false, true);
+  t.setStroke('#000000', 4);
+  return t.setShadow(3, 3, '#000000', 0, false, true);
 }
 
-/** Static camera post-processing: a gentle vignette (always) and a subtle bloom (not in
- * calm mode). WebGL only — no-ops on the canvas fallback. */
+/** Static camera post-processing: a gentle vignette only. Bloom is intentionally gone — it
+ * blooms bright edges into a soft glow, which fights the crisp pixel look. WebGL only. */
 export function addSceneFX(scene: Phaser.Scene): void {
   const cam = scene.cameras.main;
   if (scene.renderer.type !== Phaser.WEBGL || !cam.postFX) return;
   try {
-    cam.postFX.addVignette(0.5, 0.5, 0.92, 0.35);
-    if (!settings.calmMode) cam.postFX.addBloom(0xffffff, 1, 1, 1.1, 0.55);
+    cam.postFX.addVignette(0.5, 0.5, 0.95, 0.28);
   } catch {
     /* postFX unavailable on this renderer — skip silently */
   }
