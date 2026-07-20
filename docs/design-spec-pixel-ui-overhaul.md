@@ -1,7 +1,7 @@
 # VOX — Pixel UI Overhaul Design Spec
 
 **Branch:** `design/pixel-ui-overhaul`  
-**Status:** Mockup complete — ready for implementation  
+**Status:** Implemented — see "As-built" at the end for how the spec mapped onto the Phaser codebase.  
 
 ---
 
@@ -449,3 +449,37 @@ White speech bubble, black 4 px border, `step-end` blink only (no fades):
 - [ ] HUD buttons use 2 px `translateY` snap on hover (no easing)
 - [ ] VOICE meter segments use hard-stop colours, no gradient
 - [ ] All sprite textures exported at 1× — no runtime upscaling
+
+---
+
+## As-built (implementation notes)
+
+The spec was written against a React/DOM mockup; VOX is a Phaser-3 canvas game with firm
+offline and accessibility constraints. Here is how it mapped, and the deliberate deviations:
+
+- **Rendering:** `pixelArt: true` + `roundPixels: true` + `antialias/antialiasGL: false` in the
+  Phaser config; `image-rendering: pixelated` on the canvas and `-webkit-font-smoothing: none`
+  globally. This is the crispness fix.
+- **Palette:** the spec palette (indigo/purple/cyan/red/gold, black ink) is now the game's
+  `NORMAL` palette in `src/systems/palette.ts`. Everything reads from `pal()`, so the recolour
+  propagates to every sprite, backdrop, and HUD element at once.
+- **Font — self-hosted, not CDN:** the game is offline-first (service worker precache), so
+  Press Start 2P is bundled via `@fontsource/press-start-2p` instead of the Google Fonts CDN
+  link in the spec. The boot waits on `document.fonts.load` (2.5 s timeout fallback) so Phaser
+  bakes text with the pixel font, and the woff/woff2 files are added to the Workbox precache.
+- **Font scope:** Press Start 2P is applied to **chrome** — logo, subtitle, menu, overlay
+  headings, buttons, HUD labels, meters. **Prose stays monospace** (payoff cards, world-clear
+  runbook, captions, content note, control rows) so full sentences stay legible — this also
+  protects the readability pillar. (Deviates from "never use system fonts on any UI element.")
+- **CSS techniques → canvas:** box-shadow pixel sprites, `drawPixelMatrix`; double-border
+  panels, `drawPixelPanel`; segmented meters, `drawSegmentMeter`; hearts from the spec
+  matrices — all in `src/systems/uikit.ts`, drawn on Phaser `Graphics`. The VOX logo is the
+  spec `LOGO_MATRIX` rendered as pixel cells with a black outline + cyan drop-shadow.
+- **Accessibility preserved:** calm mode gets a desaturated variant of the new palette (same
+  hues, softer), and **scanlines are gated off** under calm mode or reduced motion. Hovers
+  snap (no easing), per the spec.
+- **Not done in this pass:** the ~1,400 lines of procedural sprite/backdrop art in
+  `textures.ts`/`backdrops.ts` are recoloured and rendered crisp, but not hand-redrawn as
+  true low-res pixel art — that is a much larger art pass, tracked separately. Bitmap-font
+  atlas for canvas text was not needed: the self-hosted webfont + `pixelArt` sampling is crisp
+  enough at the game's fixed resolution.

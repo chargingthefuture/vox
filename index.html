@@ -17,7 +17,7 @@
     />
     <!-- Install / fullscreen: a manifest for Android, apple meta for iOS "Add to Home Screen". -->
     <link rel="manifest" href="manifest.webmanifest" />
-    <meta name="theme-color" content="#11122b" />
+    <meta name="theme-color" content="#0d0b1e" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -29,10 +29,13 @@
         margin: 0;
         padding: 0;
         /* Match the game sky so any letterboxing blends in instead of reading as broken */
-        background: #11122b;
+        background: #0d0b1e;
         height: 100%;
         overflow: hidden;
         overscroll-behavior: none;
+        /* Pixel-art identity: hard edges, no smoothing, anywhere the browser would soften. */
+        -webkit-font-smoothing: none;
+        -moz-osx-font-smoothing: unset;
       }
       #game {
         /* Fixed to the visual viewport: no address-bar overflow on phones */
@@ -46,6 +49,9 @@
       }
       canvas {
         touch-action: none;
+        /* Keep the upscaled canvas crisp instead of bilinear-blurred. */
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
       }
       /* The game is a landscape side-scroller. On a phone held upright, ask for a turn
          instead of showing a sliver of game in a wall of black. */
@@ -54,7 +60,7 @@
         position: fixed;
         inset: 0;
         z-index: 10;
-        background: #11122b;
+        background: #0d0b1e;
         color: #f7f7ff;
         font-family: monospace;
         font-size: 18px;
