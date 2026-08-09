@@ -192,7 +192,9 @@ export abstract class BaseWorldScene extends Phaser.Scene implements BossHost {
 
   protected startBoss(): void {
     this.bossStarted = true;
-    const wall = this.block(this.bossWallX, GROUND_Y - 80, 24, 160);
+    // Tall enough that the player's ~163px jump apex cannot clear it — this wall seals the
+    // arena, so it has to stay well above jump height.
+    const wall = this.block(this.bossWallX, GROUND_Y - 120, 24, 240);
     wall.setVisible(false);
     this.boss = this.createBoss();
     this.physics.add.overlap(this.player, this.boss, () => this.boss && this.hurtPlayer(this.boss.x));
