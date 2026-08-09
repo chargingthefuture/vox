@@ -96,40 +96,10 @@ export function ensureTextures(scene: Phaser.Scene): void {
   const p = pal();
   const g = scene.add.graphics();
 
-  // How much each sprite is chunked: drawn at 1/PIX resolution, then blown back up with
-  // nearest-neighbour, so smooth curves and outlines become genuine stair-stepped pixels.
-  const PIX = 2;
-
   const gen = (key: string, w: number, h: number, draw: () => void): void => {
     g.clear();
     draw();
-    // Tiny textures (particles, sparks) lose their shape at half res — keep those 1:1.
-    if (Math.min(w, h) < 12) {
-      g.generateTexture(key, w, h);
-      return;
-    }
-    // Pixel-quantize: render the smooth vector art into a half-size buffer, then stamp it
-    // back up at 2× with NEAREST sampling. The final texture keeps the same key and
-    // dimensions, so physics bodies and gameplay code are untouched.
-    const sw = Math.ceil(w / PIX);
-    const sh = Math.ceil(h / PIX);
-    const tmpKey = `${key}--px-src`;
-    const small = scene.textures.addDynamicTexture(tmpKey, sw, sh);
-    const full = scene.textures.addDynamicTexture(key, w, h);
-    if (!small || !full) {
-      // Dynamic textures unavailable (shouldn't happen on 3.87) — fall back to smooth art.
-      if (small) scene.textures.remove(tmpKey);
-      if (full) scene.textures.remove(key);
-      g.generateTexture(key, w, h);
-      return;
-    }
-    small.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    full.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    g.setScale(1 / PIX);
-    small.draw(g, 0, 0);
-    g.setScale(1);
-    full.stamp(tmpKey, undefined, 0, 0, { scaleX: PIX, scaleY: PIX, originX: 0, originY: 0 });
-    scene.textures.remove(tmpKey);
+    g.generateTexture(key, w, h);
   };
 
   // --- hand-inked cartoon helpers ------------------------------------------------

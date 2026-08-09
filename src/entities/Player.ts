@@ -9,7 +9,10 @@ import { ensureAnims } from '../systems/textures';
 export const PLAYER_MAX_HP = 5;
 
 const MOVE_SPEED = 250;
-const JUMP_VELOCITY = -560;
+// Apex = JUMP_VELOCITY² / (2 × world gravity) = 700² / 3000 ≈ 163px. Every world's lowest
+// floating platform sits 112px above the ground and the mid tier reaches 140px, so the old
+// -560 (≈104px apex) left every platform in the game unreachable. Keep this above ~150.
+const JUMP_VELOCITY = -700;
 const COYOTE_MS = 110;
 const JUMP_BUFFER_MS = 130;
 const ATTACK_MS = [200, 200, 280]; // per combo step; the finisher lingers
